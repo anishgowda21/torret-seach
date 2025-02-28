@@ -105,6 +105,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
+                              // ignore: deprecated_member_use
                               ).colorScheme.primary.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),
