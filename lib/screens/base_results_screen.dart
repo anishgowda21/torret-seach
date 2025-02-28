@@ -32,7 +32,7 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
     items = widget.initialItems;
     totalResults = widget.totalResults ?? items.length;
     if (items.isEmpty && !isLoading) {
-      errorMessage = null; // Ensure no stale error
+      errorMessage = null;
     }
   }
 
@@ -65,9 +65,55 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(appBarTitle)),
+      backgroundColor: const Color(0xFFF8F1E9), // Creamy off-white
+      appBar: AppBar(
+        title: Text(
+          appBarTitle,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white,
+                const Color(0xFFF8E8B0).withOpacity(0.5), // Light gold hint
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+      ),
       body: Column(
         children: [
+          // Subtle Heading
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Row(
+              children: [
+                Text(
+                  "Search Results",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Georgia',
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 40,
+                  height: 2,
+                  color: const Color(0xFFD4AF37), // Gold accent
+                ),
+              ],
+            ),
+          ),
           ResSearchBar(
             controller: searchController,
             onSearch: () => performSearch(searchController.text),

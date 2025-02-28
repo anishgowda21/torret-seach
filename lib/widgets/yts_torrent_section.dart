@@ -57,7 +57,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: const Color(0xFFF8F1E9),
         border: Border(
           top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
@@ -105,7 +105,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             decoration: BoxDecoration(
                               color: Theme.of(
                                 context,
-                              // ignore: deprecated_member_use
+                                // ignore: deprecated_member_use
                               ).colorScheme.primary.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(10),
                             ),

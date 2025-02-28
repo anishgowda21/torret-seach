@@ -26,6 +26,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       clipBehavior: Clip.antiAlias, // Ensures image corners match card
       elevation: 3,
+      color: const Color.fromARGB(255, 243, 229, 215),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

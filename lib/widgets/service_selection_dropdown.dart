@@ -17,20 +17,29 @@ class ServiceSelectionDropdown extends StatelessWidget {
     final services = serviceProvider.availableServices;
     final currentService = serviceProvider.currentService;
 
-    // If there's only one service, just show its name
+    // If there's only one service, show its name
     if (services.length <= 1) {
       return Card(
         elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(currentService.serviceIcon),
-              SizedBox(width: 8),
-              Text(
-                "Searching: ${currentService.serviceName}",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Icon(currentService.serviceIcon, size: 20, color: Colors.black87),
+              const SizedBox(width: 8),
+              Flexible(
+                // Use Flexible instead of Expanded for tighter control
+                child: Text(
+                  currentService.serviceName, // Simplified to just service name
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
               ),
             ],
           ),
@@ -41,13 +50,14 @@ class ServiceSelectionDropdown extends StatelessWidget {
     // Otherwise, show dropdown with all available services
     return Card(
       elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             isExpanded: true,
             value: currentService.serviceId,
-            icon: const Icon(Icons.arrow_drop_down),
+            icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
             onChanged: (String? serviceId) {
               if (serviceId != null) {
                 final service = serviceProvider.getServiceById(serviceId);
@@ -62,11 +72,22 @@ class ServiceSelectionDropdown extends StatelessWidget {
                     value: service.serviceId,
                     child: Row(
                       children: [
-                        Icon(service.serviceIcon),
-                        SizedBox(width: 12),
-                        Text(
-                          service.serviceName,
-                          style: TextStyle(fontSize: 16),
+                        Icon(
+                          service.serviceIcon,
+                          size: 20,
+                          color: Colors.black87,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          // Constrain text width
+                          child: Text(
+                            service.serviceName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
                         ),
                       ],
                     ),
