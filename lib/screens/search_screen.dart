@@ -1,6 +1,7 @@
+// search_screen.dart
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/yts_results_screen.dart';
-import 'package:my_app/services/yts_api_service.dart';
+import 'package:my_app/services/search_service_provider.dart';
+import 'package:my_app/widgets/service_selection_dropdown.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -11,9 +12,10 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  bool _isLoading = false;
-  final YtsApiService _apiService = YtsApiService();
   final FocusNode _searchFocusNode = FocusNode();
+  bool _isLoading = false;
+  final SearchServiceProvider _serviceProvider = SearchServiceProvider();
+  String? _errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -25,21 +27,45 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // Service selection dropdown
+              ServiceSelectionDropdown(
+                serviceProvider: _serviceProvider,
+                onServiceChanged: (service) {
+                  setState(() {
+                    _serviceProvider.currentService = service;
+                    // Update hint text when service changes
+                    _errorMessage = null;
+                  });
+                },
+              ),
+              SizedBox(height: 16),
+              // Search input field
               TextField(
                 controller: _searchController,
                 focusNode: _searchFocusNode,
                 decoration: InputDecoration(
-                  hintText: "Search Movies....",
+                  hintText:
+                      "Search ${_serviceProvider.currentService.serviceName}...",
                   border: OutlineInputBorder(),
+                  prefixIcon: Icon(_serviceProvider.currentService.serviceIcon),
+                  errorText: _errorMessage,
                 ),
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => _performSearch(),
               ),
               SizedBox(height: 16),
-              ElevatedButton(
+              // Search button
+              ElevatedButton.icon(
                 onPressed: _isLoading ? null : _performSearch,
-                child:
-                    _isLoading ? CircularProgressIndicator() : Text('Search'),
+                icon:
+                    _isLoading
+                        ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : Icon(_serviceProvider.currentService.serviceIcon),
+                label: Text(_isLoading ? 'Searching...' : 'Search'),
               ),
             ],
           ),
@@ -51,24 +77,37 @@ class _SearchScreenState extends State<SearchScreen> {
   void _performSearch() async {
     if (_isLoading) return;
     String query = _searchController.text;
-    if (query.trim().isEmpty) return;
+    if (query.trim().isEmpty) {
+      setState(() {
+        _errorMessage = "Please enter a search term";
+      });
+      return;
+    }
+
+    // Clear error if any
+    setState(() {
+      _errorMessage = null;
+    });
+
+    // Dismiss keyboard
     _searchFocusNode.unfocus();
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final results = await _apiService.searchMovies(query);
+      final service = _serviceProvider.currentService;
+      final results = await service.search(query);
+
       if (mounted) {
+        // The service knows how to create the appropriate screen for its results
         Navigator.push(
           context,
           MaterialPageRoute(
             builder:
-                (context) => YtsResultsScreen(
-                  initialResults: results,
-                  initialQuery: query,
-                  apiService: _apiService,
-                ),
+                (context) =>
+                    service.createResultsScreen(results: results, query: query),
           ),
         ).then((_) {
           if (mounted) _searchController.clear();
@@ -76,16 +115,25 @@ class _SearchScreenState extends State<SearchScreen> {
       }
     } catch (e) {
       if (mounted) {
-        // Guard ScaffoldMessenger
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        setState(() {
+          _errorMessage = _formatError(e);
+        });
       }
     } finally {
       setState(() {
         _isLoading = false;
       });
     }
+  }
+
+  String _formatError(dynamic e) {
+    final message = e.toString();
+    if (message.contains('internet')) {
+      return 'Please check your internet connection';
+    } else if (message.contains('timed out')) {
+      return 'The request took too long. Try again';
+    }
+    return 'Error: ${message.replaceAll('Exception: ', '')}';
   }
 
   @override

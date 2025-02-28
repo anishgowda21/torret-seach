@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/model/yts_search_result.dart';
 
-class TorrentDropdown extends StatelessWidget {
+class YtsTorrentDropdown extends StatelessWidget {
   final List<Torrent> torrents;
 
-  const TorrentDropdown({required this.torrents, super.key});
+  const YtsTorrentDropdown({required this.torrents, super.key});
 
   @override
   Widget build(BuildContext context) {

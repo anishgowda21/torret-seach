@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:language_picker/languages.dart';
 import 'package:my_app/model/yts_search_result.dart';
-import 'package:my_app/widgets/torrent_dropdown.dart';
+import 'package:my_app/widgets/yts_torrent_dropdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class MovieCard extends StatelessWidget {
+class YtsMovieCard extends StatelessWidget {
   final Movie movie;
 
-  const MovieCard({required this.movie, super.key});
+  const YtsMovieCard({required this.movie, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class MovieCard extends StatelessWidget {
             _buildImdbButton(),
             const SizedBox(height: 8),
             // Torrent Dropdown
-            TorrentDropdown(torrents: movie.torrents),
+            YtsTorrentDropdown(torrents: movie.torrents),
           ],
         ),
       ),
