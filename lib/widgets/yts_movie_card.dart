@@ -15,6 +15,7 @@ class YtsMovieCard extends StatefulWidget {
 
 class _YtsMovieCardState extends State<YtsMovieCard> {
   bool _expanded = false;
+  bool _showTorrents = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +30,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Movie header section with image and details
+          // Movie header section with image and details - this stays fixed
           _buildMovieHeader(movie),
 
           // Movie information section
@@ -49,12 +50,19 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
 
                 // Action buttons
                 _buildActionButtons(movie),
+
+                // Torrents toggle button (only if has torrents)
+                if (hasTorrents) _buildTorrentsToggle(),
               ],
             ),
           ),
 
-          // Torrents section
-          if (hasTorrents) YtsTorrentSection(torrents: movie.torrents),
+          // Torrents section - only visible when toggled
+          if (hasTorrents && _showTorrents)
+            YtsTorrentSection(
+              torrents: movie.torrents,
+              groupedTorrents: movie.groupedTorrents,
+            ),
         ],
       ),
     );
@@ -63,7 +71,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
   Widget _buildMovieHeader(Movie movie) {
     return Stack(
       children: [
-        // Movie cover image
+        // Movie cover image - precached to avoid flickering
         SizedBox(
           height: 200,
           width: double.infinity,
@@ -81,7 +89,6 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                // ignore: deprecated_member_use
                 colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
               ),
             ),
@@ -130,9 +137,11 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
       );
     }
 
+    // Explicitly create a separate widget for the image to prevent flickering
     return Image.memory(
       Uri.parse(movie.coverImage).data!.contentAsBytes(),
       fit: BoxFit.cover,
+      gaplessPlayback: true, // Prevents flickering during state changes
       errorBuilder:
           (context, error, stackTrace) => Container(
             color: Colors.grey[800],
@@ -180,26 +189,17 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _expanded = !_expanded;
-            });
-          },
-          child: AnimatedCrossFade(
-            firstChild: Text(
-              description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14),
-            ),
-            secondChild: Text(description, style: TextStyle(fontSize: 14)),
-            crossFadeState:
-                _expanded
-                    ? CrossFadeState.showSecond
-                    : CrossFadeState.showFirst,
-            duration: Duration(milliseconds: 300),
+        AnimatedCrossFade(
+          firstChild: Text(
+            description,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 14),
           ),
+          secondChild: Text(description, style: TextStyle(fontSize: 14)),
+          crossFadeState:
+              _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: Duration(milliseconds: 300),
         ),
         TextButton(
           onPressed: () {
@@ -240,6 +240,39 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildTorrentsToggle() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _showTorrents = !_showTorrents;
+          });
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _showTorrents
+                  ? Icons.keyboard_arrow_up
+                  : Icons.keyboard_arrow_down,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              _showTorrents ? 'Hide download options' : 'Show download options',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

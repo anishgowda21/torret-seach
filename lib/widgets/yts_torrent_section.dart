@@ -4,8 +4,13 @@ import 'package:my_app/model/yts_search_result.dart';
 
 class YtsTorrentSection extends StatefulWidget {
   final List<Torrent> torrents;
+  final Map<String, List<Torrent>> groupedTorrents;
 
-  const YtsTorrentSection({required this.torrents, super.key});
+  const YtsTorrentSection({
+    required this.torrents,
+    required this.groupedTorrents,
+    super.key,
+  });
 
   @override
   State<YtsTorrentSection> createState() => _YtsTorrentSectionState();
@@ -14,24 +19,18 @@ class YtsTorrentSection extends StatefulWidget {
 class _YtsTorrentSectionState extends State<YtsTorrentSection>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late Map<String, List<Torrent>> _groupedTorrents;
-  final Set<String> _expandedItems = {}; // Set to final
+  final Set<String> _expandedItems = {};
+
+  // Maximum height for the tab content before it scrolls
+  static const double _maxTabContentHeight = 250.0;
 
   @override
   void initState() {
     super.initState();
-    // Group torrents by type
-    _groupedTorrents = {};
-    for (var torrent in widget.torrents) {
-      if (!_groupedTorrents.containsKey(torrent.type)) {
-        _groupedTorrents[torrent.type] = [];
-      }
-      _groupedTorrents[torrent.type]!.add(torrent);
-    }
 
-    // Initialize tab controller
+    // Initialize tab controller with the grouped torrent types
     _tabController = TabController(
-      length: _groupedTorrents.keys.length,
+      length: widget.groupedTorrents.keys.length,
       vsync: this,
     );
   }
@@ -42,6 +41,11 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
     super.dispose();
   }
 
+  String capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.torrents.isEmpty) {
@@ -49,7 +53,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
     }
 
     // Get sorted list of torrent types (keys)
-    final types = _groupedTorrents.keys.toList();
+    final types = widget.groupedTorrents.keys.toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -59,6 +63,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // Important: Make column fit content
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
@@ -77,58 +82,59 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
           ),
 
           // Tab bar for torrent types
-          TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            dividerColor: Colors.transparent,
-            tabs:
-                types.map((type) {
-                  final count = _groupedTorrents[type]?.length ?? 0;
-                  return Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(type),
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(
-                              context,
-                            // ignore: deprecated_member_use
-                            ).colorScheme.primary.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '$count',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+          if (types.isNotEmpty) // Only show tabs if there are types
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              dividerColor: Colors.transparent,
+              tabs:
+                  types.map((type) {
+                    final count = widget.groupedTorrents[type]?.length ?? 0;
+                    return Tab(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(capitalizeFirstLetter(type)),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$count',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-          ),
-
-          // Tab content - torrent lists
-          SizedBox(
-            height: 300, // Adjusted height for expanded items
-            child: TabBarView(
-              controller: _tabController,
-              children:
-                  types.map((type) {
-                    final typeTorrents = _groupedTorrents[type] ?? [];
-                    return _buildTorrentList(typeTorrents);
+                        ],
+                      ),
+                    );
                   }).toList(),
             ),
-          ),
+
+          // Tab content - adaptive height
+          if (types.isNotEmpty) // Only show tab view if there are types
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: _maxTabContentHeight),
+              child: TabBarView(
+                controller: _tabController,
+                children:
+                    types.map((type) {
+                      final typeTorrents = widget.groupedTorrents[type] ?? [];
+                      return _buildTorrentList(typeTorrents);
+                    }).toList(),
+              ),
+            ),
         ],
       ),
     );
@@ -137,6 +143,13 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
   Widget _buildTorrentList(List<Torrent> torrents) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // Important: Allow the list to shrink to content
+      shrinkWrap: true,
+      // Only enable scrolling if there are enough items
+      physics:
+          torrents.length > 3
+              ? const AlwaysScrollableScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
       itemCount: torrents.length,
       itemBuilder: (context, index) {
         final torrent = torrents[index];
