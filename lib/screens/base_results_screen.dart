@@ -5,11 +5,13 @@ import 'package:my_app/widgets/res_search_bar.dart';
 abstract class BaseResultsScreen<T> extends StatefulWidget {
   final List<T> initialItems;
   final String initialQuery;
+  final int? totalResults;
 
   const BaseResultsScreen({
     super.key,
     required this.initialItems,
     required this.initialQuery,
+    this.totalResults,
   });
 
   @override
@@ -21,12 +23,14 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
   bool isLoading = false;
   String? errorMessage;
   late List<T> items;
+  int? totalResults;
 
   @override
   void initState() {
     super.initState();
     searchController = TextEditingController(text: widget.initialQuery);
     items = widget.initialItems;
+    totalResults = widget.totalResults ?? items.length;
     if (items.isEmpty && !isLoading) {
       errorMessage = null; // Ensure no stale error
     }
@@ -75,6 +79,8 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
               items: items,
               itemBuilder: buildListItem,
               errorMessage: errorMessage,
+              query: searchController.text,
+              totalResults: totalResults,
             ),
           ),
         ],

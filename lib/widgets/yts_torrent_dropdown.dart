@@ -6,6 +6,12 @@ class YtsTorrentDropdown extends StatelessWidget {
 
   const YtsTorrentDropdown({required this.torrents, super.key});
 
+  String _capitalizeFirstLetter(String text) {
+    if (text.isEmpty) return text;
+
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (torrents.isEmpty) {
@@ -27,7 +33,9 @@ class YtsTorrentDropdown extends StatelessWidget {
         const Text("Torrents:", style: TextStyle(fontWeight: FontWeight.bold)),
         ...groupedTorrents.entries.map(
           (entry) => ExpansionTile(
-            title: Text("${entry.key} (${entry.value.length})"),
+            title: Text(
+              "${_capitalizeFirstLetter(entry.key)} (${entry.value.length})",
+            ),
             children:
                 entry.value
                     .map(

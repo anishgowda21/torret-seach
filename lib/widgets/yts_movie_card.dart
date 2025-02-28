@@ -4,6 +4,10 @@ import 'package:my_app/model/yts_search_result.dart';
 import 'package:my_app/widgets/yts_torrent_dropdown.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+
+
+
+
 class YtsMovieCard extends StatelessWidget {
   final Movie movie;
 

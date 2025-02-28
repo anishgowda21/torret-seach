@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/widgets/result_list_header.dart';
 
 enum ResultsListState { loading, error, empty, data }
 
@@ -8,6 +9,8 @@ class ResultsList<T> extends StatelessWidget {
   final Widget Function(BuildContext, T) itemBuilder;
   final String? errorMessage;
   final String emptyMessage;
+  final int? totalResults;
+  final String? query;
 
   const ResultsList({
     super.key,
@@ -16,10 +19,13 @@ class ResultsList<T> extends StatelessWidget {
     required this.itemBuilder,
     this.errorMessage,
     this.emptyMessage = 'No results found',
+    this.totalResults,
+    this.query,
   });
 
   @override
   Widget build(BuildContext context) {
+
     switch (state) {
       case ResultsListState.loading:
         return Center(child: CircularProgressIndicator(strokeWidth: 2));
@@ -46,9 +52,21 @@ class ResultsList<T> extends StatelessWidget {
           ),
         );
       case ResultsListState.data:
-        return ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (context, index) => itemBuilder(context, items[index]),
+        return Column(
+          children: [
+            ResultListHeader(
+              itemsLength: items.length,
+              totalResults: totalResults ?? 0,
+              query: query ?? "",
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder:
+                    (context, index) => itemBuilder(context, items[index]),
+              ),
+            ),
+          ],
         );
     }
   }
