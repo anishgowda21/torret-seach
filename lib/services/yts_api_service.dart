@@ -12,7 +12,7 @@ class YtsApiService {
   Future<YtsSearchResult> searchMovies(String query) async {
     try {
       final encodedQuery = Uri.encodeComponent(query);
-      final url = '$baseUrl/yts?query=$encodedQuery&img=true';
+      final url = '$baseUrl/yts?query=$encodedQuery';
       if (baseUrl == "") throw Exception("No Base URL");
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
@@ -49,9 +49,9 @@ class YtsApiService {
         }
       }
     } on SocketException {
-      throw Exception('No internet connection');
+      throw Exception('Please check your internet connection.');
     } on TimeoutException {
-      throw Exception('Request timed out');
+      throw Exception('The request took too long. Try again later');
     } on FormatException {
       throw Exception('Invalid response format');
     } catch (e) {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class SearchBar extends StatelessWidget {
+class ResSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final Function() onSearch;
   final bool isLoading;
 
-  const SearchBar({
+  const ResSearchBar({
     super.key,
     required this.controller,
     required this.onSearch,
@@ -30,6 +30,7 @@ class SearchBar extends StatelessWidget {
                 ),
               ),
               onSubmitted: (_) => onSearch(),
+              textInputAction: TextInputAction.search,
             ),
           ),
           SizedBox(width: 8.0),
@@ -40,7 +41,10 @@ class SearchBar extends StatelessWidget {
                 padding: EdgeInsets.all(8),
                 child: CircularProgressIndicator(strokeWidth: 2.0),
               )
-              : ElevatedButton(onPressed: onSearch, child: Text("Search")),
+              : ElevatedButton(
+                onPressed: controller.text.trim().isEmpty ? null : onSearch,
+                child: Text("Search"),
+              ),
         ],
       ),
     );
