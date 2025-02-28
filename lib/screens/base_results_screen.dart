@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/widgets/results_list.dart';
-import 'package:my_app/widgets/search_bar.dart';
+import 'package:my_app/widgets/res_search_bar.dart';
 
 abstract class BaseResultsScreen<T> extends StatefulWidget {
   final List<T> initialItems;

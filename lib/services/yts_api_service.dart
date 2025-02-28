@@ -12,7 +12,7 @@ class YtsApiService {
   Future<YtsSearchResult> searchMovies(String query) async {
     try {
       final encodedQuery = Uri.encodeComponent(query);
-      final url = '$baseUrl/yts?query=$encodedQuery';
+      final url = '$baseUrl/yts?query=$encodedQuery&img=true';
       if (baseUrl == "") throw Exception("No Base URL");
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 

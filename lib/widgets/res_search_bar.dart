@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class ResSearchBar extends StatelessWidget {
+class ResSearchBar extends StatefulWidget {
   final TextEditingController controller;
   final Function() onSearch;
   final bool isLoading;
@@ -13,6 +13,19 @@ class ResSearchBar extends StatelessWidget {
   });
 
   @override
+  State<ResSearchBar> createState() => _ResSearchBarState();
+}
+
+class _ResSearchBarState extends State<ResSearchBar> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(8),
@@ -20,7 +33,8 @@ class ResSearchBar extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
-              controller: controller,
+              controller: widget.controller,
+              focusNode: _focusNode,
               decoration: InputDecoration(
                 hintText: "Search...",
                 border: OutlineInputBorder(),
@@ -29,12 +43,15 @@ class ResSearchBar extends StatelessWidget {
                   vertical: 8,
                 ),
               ),
-              onSubmitted: (_) => onSearch(),
+              onSubmitted: (_) {
+                widget.onSearch();
+                _focusNode.unfocus();
+              },
               textInputAction: TextInputAction.search,
             ),
           ),
           SizedBox(width: 8.0),
-          isLoading
+          widget.isLoading
               ? Container(
                 height: 36,
                 width: 36,
@@ -42,7 +59,12 @@ class ResSearchBar extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2.0),
               )
               : ElevatedButton(
-                onPressed: controller.text.trim().isEmpty ? null : onSearch,
+                onPressed: () {
+                  if (widget.controller.text.trim().isNotEmpty) {
+                    widget.onSearch();
+                    _focusNode.unfocus();
+                  }
+                },
                 child: Text("Search"),
               ),
         ],

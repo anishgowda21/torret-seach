@@ -13,11 +13,12 @@ class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   final YtsApiService _apiService = YtsApiService();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Movie Search")),
+      appBar: AppBar(title: Text("T Search")),
       body: Center(
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -26,10 +27,13 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               TextField(
                 controller: _searchController,
+                focusNode: _searchFocusNode,
                 decoration: InputDecoration(
                   hintText: "Search Movies....",
                   border: OutlineInputBorder(),
                 ),
+                textInputAction: TextInputAction.search,
+                onSubmitted: (_) => _performSearch(),
               ),
               SizedBox(height: 16),
               ElevatedButton(
@@ -48,7 +52,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_isLoading) return;
     String query = _searchController.text;
     if (query.trim().isEmpty) return;
-
+    _searchFocusNode.unfocus();
     setState(() {
       _isLoading = true;
     });
@@ -63,6 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 (context) => YtsResultsScreen(
                   initialResults: results,
                   initialQuery: query,
+                  apiService: _apiService,
                 ),
           ),
         ).then((_) {
@@ -86,6 +91,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 }
