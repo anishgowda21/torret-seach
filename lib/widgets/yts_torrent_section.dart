@@ -1,6 +1,9 @@
+// lib/widgets/yts_torrent_section.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_app/model/yts_search_result.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class YtsTorrentSection extends StatefulWidget {
   final List<Torrent> torrents;
@@ -21,18 +24,13 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
   late TabController _tabController;
   final Set<String> _expandedItems = {};
 
-  // Maximum height for the tab content before it scrolls
-  static const double _maxTabContentHeight = 250.0;
-
   @override
   void initState() {
     super.initState();
 
     // Initialize tab controller with the grouped torrent types
-    _tabController = TabController(
-      length: widget.groupedTorrents.keys.length,
-      vsync: this,
-    );
+    final types = widget.groupedTorrents.keys.toList();
+    _tabController = TabController(length: types.length, vsync: this);
   }
 
   @override
@@ -54,88 +52,87 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
 
     // Get sorted list of torrent types (keys)
     final types = widget.groupedTorrents.keys.toList();
+    if (types.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F1E9),
-        border: Border(
-          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
-        ),
-      ),
+    return Material(
+      color: Colors.white,
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Important: Make column fit content
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          // Download Options header
+          Container(
+            color: Colors.grey[100],
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Row(
               children: [
-                Icon(Icons.download, size: 20),
+                Icon(Icons.download, size: 20, color: Colors.grey[700]),
                 const SizedBox(width: 8),
                 Text(
                   'Download Options',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
                 ),
               ],
             ),
           ),
 
-          // Tab bar for torrent types
-          if (types.isNotEmpty) // Only show tabs if there are types
-            TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              dividerColor: Colors.transparent,
-              tabs:
-                  types.map((type) {
-                    final count = widget.groupedTorrents[type]?.length ?? 0;
-                    return Tab(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(capitalizeFirstLetter(type)),
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                                // ignore: deprecated_member_use
-                              ).colorScheme.primary.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '$count',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+          // Tab bar
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            labelColor: const Color(0xFF6750A4),
+            unselectedLabelColor: Colors.grey[700],
+            indicatorColor: const Color(0xFF6750A4),
+            tabs:
+                types.map((type) {
+                  final count = widget.groupedTorrents[type]?.length ?? 0;
+                  return Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(capitalizeFirstLetter(type)),
+                        const SizedBox(width: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            // ignore: deprecated_member_use
+                            color: const Color(0xFF6750A4).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '$count',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-                    );
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+          ),
+
+          // Tab content
+          SizedBox(
+            height: 300, // Fixed height for tab content
+            child: TabBarView(
+              controller: _tabController,
+              children:
+                  types.map((type) {
+                    final typeTorrents = widget.groupedTorrents[type] ?? [];
+                    return _buildTorrentList(typeTorrents);
                   }).toList(),
             ),
-
-          // Tab content - adaptive height
-          if (types.isNotEmpty) // Only show tab view if there are types
-            ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: _maxTabContentHeight),
-              child: TabBarView(
-                controller: _tabController,
-                children:
-                    types.map((type) {
-                      final typeTorrents = widget.groupedTorrents[type] ?? [];
-                      return _buildTorrentList(typeTorrents);
-                    }).toList(),
-              ),
-            ),
+          ),
         ],
       ),
     );
@@ -143,39 +140,36 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
 
   Widget _buildTorrentList(List<Torrent> torrents) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      // Important: Allow the list to shrink to content
-      shrinkWrap: true,
-      // Only enable scrolling if there are enough items
-      physics:
-          torrents.length > 3
-              ? const AlwaysScrollableScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(8),
       itemCount: torrents.length,
       itemBuilder: (context, index) {
         final torrent = torrents[index];
-        final isExpanded = _expandedItems.contains(torrent.hash);
+        final uniqueId = '${torrent.hash}_$index';
+        final isExpanded = _expandedItems.contains(uniqueId);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           elevation: 1,
-          child: InkWell(
-            onTap: () {
-              setState(() {
-                if (isExpanded) {
-                  _expandedItems.remove(torrent.hash);
-                } else {
-                  _expandedItems.add(torrent.hash);
-                }
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Collapsed view (always visible)
-                  Row(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header row (always visible)
+              InkWell(
+                onTap: () {
+                  setState(() {
+                    if (isExpanded) {
+                      _expandedItems.remove(uniqueId);
+                    } else {
+                      _expandedItems.add(uniqueId);
+                    }
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
                       // Quality tag
                       Container(
@@ -226,7 +220,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                           Icon(
                             Icons.arrow_downward,
                             size: 14,
-                            color: Colors.orange,
+                            color: Colors.red,
                           ),
                           const SizedBox(width: 2),
                           Text(
@@ -249,77 +243,149 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                         ),
                       ),
 
+                      const SizedBox(width: 8),
+
                       // Expansion indicator
                       Icon(
                         isExpanded
                             ? Icons.keyboard_arrow_up
                             : Icons.keyboard_arrow_down,
                         size: 16,
+                        color: Colors.grey[600],
                       ),
                     ],
                   ),
+                ),
+              ),
 
-                  // Expanded view (only visible when expanded)
-                  if (isExpanded) ...[
-                    const SizedBox(height: 12),
-                    const Divider(height: 1),
-                    const SizedBox(height: 12),
-
-                    // Upload date
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Uploaded: ${torrent.uploadDate}',
-                          style: TextStyle(
-                            fontSize: 12,
+              // Expanded content
+              if (isExpanded)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(12),
+                      bottomRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Upload date info
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 14,
                             color: Colors.grey[600],
                           ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              _copyToClipboard(torrent.hash, 'Hash');
-                            },
-                            icon: const Icon(Icons.copy, size: 16),
-                            label: const Text('Copy Hash'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _copyToClipboard(torrent.magnet, 'Magnet link');
-                            },
-                            icon: const Icon(Icons.link, size: 16),
-                            label: const Text('Magnet'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.primary,
-                              foregroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
+                          const SizedBox(width: 4),
+                          Text(
+                            'Uploaded: ${torrent.uploadDate}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
                             ),
                           ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Magnet Link Box with Copy option
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Magnet Link',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap:
+                                    () => _copyToClipboard(
+                                      torrent.magnet,
+                                      'Magnet link',
+                                    ),
+                                child: Text(
+                                  'Copy',
+                                  style: TextStyle(
+                                    color: const Color(
+                                      0xFF6750A4,
+                                    ), // Purple to match IMDB button
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Text(
+                              torrent.magnet,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[800],
+                                fontFamily: 'monospace',
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Magnet button - full width
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => _openMagnet(torrent.magnet),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(
+                              0xFF6750A4,
+                            ), // Purple to match IMDB button
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                24,
+                              ), // More rounded like Image 2
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.download,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 8),
+                              Text('Download'),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
         );
       },
@@ -328,9 +394,15 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
 
   Color _getQualityColor(String quality) {
     quality = quality.toLowerCase();
-    if (quality.contains('720p')) return Colors.blue;
-    if (quality.contains('1080p')) return Colors.purple;
-    if (quality.contains('2160p') || quality.contains('4k')) return Colors.red;
+    if (quality.contains('720p')) {
+      return Colors.blue;
+    }
+    if (quality.contains('1080p')) {
+      return const Color(0xFF6750A4);
+    } // Purple to match theme
+    if (quality.contains('2160p') || quality.contains('4k')) {
+      return Colors.red;
+    }
     return Colors.grey;
   }
 
@@ -343,5 +415,21 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
         duration: const Duration(seconds: 2),
       ),
     );
+  }
+
+  Future<void> _openMagnet(String magnetLink) async {
+    final uri = Uri.parse(magnetLink);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open magnet link: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

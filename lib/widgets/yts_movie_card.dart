@@ -1,3 +1,5 @@
+// lib/widgets/yts_movie_card.dart
+
 import 'package:flutter/material.dart';
 import 'package:language_picker/languages.dart';
 import 'package:my_app/model/yts_search_result.dart';
@@ -16,6 +18,13 @@ class YtsMovieCard extends StatefulWidget {
 class _YtsMovieCardState extends State<YtsMovieCard> {
   bool _expanded = false;
   bool _showTorrents = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Process torrents for grouping
+    widget.movie.transformTorrents();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +60,53 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
 
                 // Action buttons
                 _buildActionButtons(movie),
-
-                // Torrents toggle button (only if has torrents)
-                if (hasTorrents) _buildTorrentsToggle(),
               ],
             ),
           ),
+
+          // Torrents toggle button (only if has torrents)
+          if (hasTorrents)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _showTorrents = !_showTorrents;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _showTorrents
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      size: 18,
+                      color: const Color(
+                        0xFF6750A4,
+                      ), // Purple to match other elements
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _showTorrents
+                          ? 'Hide download options'
+                          : 'Show download options',
+                      style: TextStyle(
+                        color: const Color(
+                          0xFF6750A4,
+                        ), // Purple to match other elements
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           // Torrents section - only visible when toggled
           if (hasTorrents && _showTorrents)
@@ -236,45 +286,19 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               icon: const Icon(Icons.open_in_new, size: 16),
               label: const Text('View on IMDb'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                backgroundColor: const Color(
+                  0xFF6750A4,
+                ), // Purple to match theme
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    24,
+                  ), // Rounded like other buttons
+                ),
               ),
             ),
           ),
       ],
-    );
-  }
-
-  Widget _buildTorrentsToggle() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _showTorrents = !_showTorrents;
-          });
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _showTorrents
-                  ? Icons.keyboard_arrow_up
-                  : Icons.keyboard_arrow_down,
-              size: 20,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              _showTorrents ? 'Hide download options' : 'Show download options',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
