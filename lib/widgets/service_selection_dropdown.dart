@@ -21,23 +21,28 @@ class ServiceSelectionDropdown extends StatelessWidget {
     if (services.length <= 1) {
       return Card(
         elevation: 2,
+        color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(currentService.serviceIcon, size: 20, color: Colors.black87),
+              Icon(
+                currentService.serviceIcon,
+                size: 20,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
               const SizedBox(width: 8),
               Flexible(
                 // Use Flexible instead of Expanded for tighter control
                 child: Text(
                   currentService.serviceName, // Simplified to just service name
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),
@@ -50,6 +55,7 @@ class ServiceSelectionDropdown extends StatelessWidget {
     // Otherwise, show dropdown with all available services
     return Card(
       elevation: 2,
+      color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
@@ -57,7 +63,10 @@ class ServiceSelectionDropdown extends StatelessWidget {
           child: DropdownButton<String>(
             isExpanded: true,
             value: currentService.serviceId,
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+            icon: Icon(
+              Icons.arrow_drop_down,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
+            ),
             onChanged: (String? serviceId) {
               if (serviceId != null) {
                 final service = serviceProvider.getServiceById(serviceId);
@@ -66,6 +75,7 @@ class ServiceSelectionDropdown extends StatelessWidget {
                 }
               }
             },
+            dropdownColor: Theme.of(context).cardColor,
             items:
                 services.map<DropdownMenuItem<String>>((SearchService service) {
                   return DropdownMenuItem<String>(
@@ -75,7 +85,7 @@ class ServiceSelectionDropdown extends StatelessWidget {
                         Icon(
                           service.serviceIcon,
                           size: 20,
-                          color: Colors.black87,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -83,9 +93,10 @@ class ServiceSelectionDropdown extends StatelessWidget {
                           child: Text(
                             service.serviceName,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: Colors.black87,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color,
                             ),
                           ),
                         ),

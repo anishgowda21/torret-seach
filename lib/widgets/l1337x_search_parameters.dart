@@ -1,5 +1,3 @@
-// lib/widgets/l1337x_search_parameters.dart
-
 import 'package:flutter/material.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/widgets/service_search_parameters.dart';
@@ -27,15 +25,19 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
 
   @override
   Widget build(BuildContext context) {
+    final borderColor = Theme.of(context).primaryColor;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final labelColor = Theme.of(
+      context,
+      // ignore: deprecated_member_use
+    ).textTheme.bodyMedium?.color?.withOpacity(0.6);
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            // ignore: deprecated_member_use
-            color: const Color(0xFFD4AF37).withOpacity(0.3),
-            width: 1,
-          ),
+          // ignore: deprecated_member_use
+          bottom: BorderSide(color: borderColor.withOpacity(0.3), width: 1),
         ),
       ),
       child: Column(
@@ -57,29 +59,27 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: Colors.grey[600],
+                          color: labelColor,
                         ),
                       ),
                     ),
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37),
-                          width: 1,
-                        ),
+                        border: Border.all(color: borderColor, width: 1),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String?>(
                           value: searchService.category,
-                          icon: const Icon(
-                            Icons.arrow_drop_down,
-                            color: Color(0xFFD4AF37),
-                          ),
+                          icon: Icon(Icons.arrow_drop_down, color: borderColor),
                           isExpanded: true,
                           padding: EdgeInsets.symmetric(horizontal: 12),
                           borderRadius: BorderRadius.circular(8),
-                          hint: Text('All Categories'),
+                          dropdownColor: Theme.of(context).cardColor,
+                          hint: Text(
+                            'All Categories',
+                            style: TextStyle(color: textColor),
+                          ),
                           onChanged: (String? newValue) {
                             setState(() {
                               searchService.category = newValue;
@@ -104,7 +104,10 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                               ) {
                                 return DropdownMenuItem<String?>(
                                   value: item['value'],
-                                  child: Text(item['display']!),
+                                  child: Text(
+                                    item['display']!,
+                                    style: TextStyle(color: textColor),
+                                  ),
                                 );
                               }).toList(),
                         ),
@@ -125,7 +128,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey[600],
+                        color: labelColor,
                       ),
                     ),
                   ),
@@ -138,10 +141,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37),
-                          width: 1,
-                        ),
+                        border: Border.all(color: borderColor, width: 1),
                       ),
                       padding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -154,6 +154,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
+                              color: textColor,
                             ),
                           ),
                           SizedBox(width: 4),
@@ -162,7 +163,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
                             size: 16,
-                            color: Color(0xFFD4AF37),
+                            color: borderColor,
                           ),
                         ],
                       ),
@@ -191,29 +192,30 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[600],
+                              color: labelColor,
                             ),
                           ),
                         ),
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFD4AF37),
-                              width: 1,
-                            ),
+                            border: Border.all(color: borderColor, width: 1),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String?>(
                               value: searchService.sort,
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_drop_down,
-                                color: Color(0xFFD4AF37),
+                                color: borderColor,
                               ),
                               isExpanded: true,
                               padding: EdgeInsets.symmetric(horizontal: 12),
                               borderRadius: BorderRadius.circular(8),
-                              hint: Text('Seeders'),
+                              dropdownColor: Theme.of(context).cardColor,
+                              hint: Text(
+                                'Seeders',
+                                style: TextStyle(color: textColor),
+                              ),
                               onChanged: (String? newValue) {
                                 setState(() {
                                   searchService.sort = newValue;
@@ -233,7 +235,10 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                                   ) {
                                     return DropdownMenuItem<String?>(
                                       value: item['value'],
-                                      child: Text(item['display']!),
+                                      child: Text(
+                                        item['display']!,
+                                        style: TextStyle(color: textColor),
+                                      ),
                                     );
                                   }).toList(),
                             ),
@@ -255,28 +260,26 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey[600],
+                              color: labelColor,
                             ),
                           ),
                         ),
                         Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: const Color(0xFFD4AF37),
-                              width: 1,
-                            ),
+                            border: Border.all(color: borderColor, width: 1),
                           ),
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               value: searchService.order,
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_drop_down,
-                                color: Color(0xFFD4AF37),
+                                color: borderColor,
                               ),
                               isExpanded: true,
                               padding: EdgeInsets.symmetric(horizontal: 12),
                               borderRadius: BorderRadius.circular(8),
+                              dropdownColor: Theme.of(context).cardColor,
                               onChanged: (String? newValue) {
                                 setState(() {
                                   searchService.order = newValue;
@@ -291,7 +294,10 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                                   ) {
                                     return DropdownMenuItem<String>(
                                       value: item['value']!,
-                                      child: Text(item['display']!),
+                                      child: Text(
+                                        item['display']!,
+                                        style: TextStyle(color: textColor),
+                                      ),
                                     );
                                   }).toList(),
                             ),

@@ -1,10 +1,13 @@
-// lib/screens/search_screen.dart
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/services/search_service_provider.dart';
 import 'package:my_app/widgets/service_search_parameters.dart';
 import 'package:my_app/widgets/service_selection_dropdown.dart';
+import 'package:my_app/screens/settings_screen.dart';
+import 'package:my_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -26,14 +29,145 @@ class _SearchScreenState extends State<SearchScreen> {
     final serviceParametersWidget = ServiceSearchParameters.forService(
       currentService,
     );
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     // Check if keyboard is open to adjust positioning
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      // Creamy Background
-      backgroundColor: const Color(0xFFF8F1E9), // Soft off-white
+      // Use theme-based background
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+
+      // App Bar
+      appBar:
+          isKeyboardOpen
+              ? null
+              : AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: Builder(
+                  builder:
+                      (context) => IconButton(
+                        icon: Icon(
+                          Icons.menu,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer();
+                        },
+                      ),
+                ),
+              ),
+
+      // Drawer / Side Panel
+      drawer: Drawer(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Drawer Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors:
+                        themeProvider.isDarkMode
+                            ? [
+                              const Color(
+                                0xFFA48929,
+                              ), // Darker gold for dark mode
+                              const Color(
+                                0xFF7A6621,
+                              ), // Dark gold for dark mode
+                            ]
+                            : [
+                              const Color(0xFFD4AF37), // Gold
+                              const Color(0xFFF8E8B0), // Light gold/ivory
+                            ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.download_outlined,
+                      size: 32,
+                      color: Colors.black87,
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      "Torret Seach",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Georgia',
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Drawer Items
+              ListTile(
+                leading: Icon(Icons.search, color: const Color(0xFFD4AF37)),
+                title: Text(
+                  'Search',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context); // Close the drawer
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.settings, color: const Color(0xFFD4AF37)),
+                title: Text(
+                  'Settings',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                onTap: () {
+                  Navigator.pop(context); // Close the drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SettingsScreen()),
+                  );
+                },
+              ),
+              Divider(),
+              // Show available services
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Available Services',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._serviceProvider.availableServices.map((service) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                        leading: Icon(service.serviceIcon),
+                        title: Text(service.serviceName),
+                        dense: true,
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
       body: SafeArea(
         child: Column(
           children: [
@@ -50,13 +184,14 @@ class _SearchScreenState extends State<SearchScreen> {
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Georgia', // Serif font for class
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     Container(
                       width: 80,
                       height: 2,
-                      color: const Color(0xFFD4AF37), // Gold accent
+                      color:
+                          Theme.of(context).primaryColor, // Theme-based accent
                     ),
                   ],
                 ),
@@ -84,7 +219,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -117,13 +252,19 @@ class _SearchScreenState extends State<SearchScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: const Color(0xFFD4AF37), // Gold border
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).primaryColor, // Theme-based border
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  // ignore: deprecated_member_use
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: Theme.of(
+                                    context,
+                                  ).shadowColor.withOpacity(
+                                    themeProvider.isDarkMode ? 0.3 : 0.2,
+                                  ),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
                                 ),
@@ -132,10 +273,22 @@ class _SearchScreenState extends State<SearchScreen> {
                             child: TextField(
                               controller: _searchController,
                               focusNode: _searchFocusNode,
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color,
+                              ),
                               decoration: InputDecoration(
                                 hintText:
                                     "Search ${_serviceProvider.currentService.serviceName}...",
-                                hintStyle: TextStyle(color: Colors.grey[500]),
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.color
+                                      ?.withOpacity(0.5),
+                                ),
                                 border: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
@@ -143,7 +296,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                 ),
                                 prefixIcon: Icon(
                                   _serviceProvider.currentService.serviceIcon,
-                                  color: const Color(0xFFD4AF37), // Gold icon
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).primaryColor, // Theme-based icon
                                 ),
                                 errorText: _errorMessage,
                                 errorStyle: const TextStyle(
@@ -162,17 +318,32 @@ class _SearchScreenState extends State<SearchScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10),
                               gradient: LinearGradient(
-                                colors: [
-                                  const Color(0xFFD4AF37), // Gold
-                                  const Color(0xFFF8E8B0), // Light gold/ivory
-                                ],
+                                colors:
+                                    themeProvider.isDarkMode
+                                        ? [
+                                          const Color(
+                                            0xFFA48929,
+                                          ), // Darker gold for dark mode
+                                          const Color(
+                                            0xFF7A6621,
+                                          ), // Dark gold for dark mode
+                                        ]
+                                        : [
+                                          const Color(0xFFD4AF37), // Gold
+                                          const Color(
+                                            0xFFF8E8B0,
+                                          ), // Light gold/ivory
+                                        ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  // ignore: deprecated_member_use
-                                  color: Colors.grey.withOpacity(0.3),
+                                  color: Theme.of(
+                                    context,
+                                  ).shadowColor.withOpacity(
+                                    themeProvider.isDarkMode ? 0.4 : 0.3,
+                                  ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -189,7 +360,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                           strokeWidth: 2,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                                Colors.black87,
+                                                themeProvider.isDarkMode
+                                                    ? Colors.white
+                                                    : Colors.black87,
                                               ),
                                         ),
                                       )
@@ -197,11 +370,19 @@ class _SearchScreenState extends State<SearchScreen> {
                                         _serviceProvider
                                             .currentService
                                             .serviceIcon,
-                                        color: Colors.black87,
+                                        color:
+                                            themeProvider.isDarkMode
+                                                ? Colors.white
+                                                : Colors.black87,
                                       ),
                               label: Text(
                                 _isLoading ? 'Searching...' : 'Search',
-                                style: const TextStyle(color: Colors.black87),
+                                style: TextStyle(
+                                  color:
+                                      themeProvider.isDarkMode
+                                          ? Colors.white
+                                          : Colors.black87,
+                                ),
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.transparent,
