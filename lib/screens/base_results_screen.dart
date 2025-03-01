@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:my_app/widgets/results_list.dart';
 import 'package:my_app/widgets/res_search_bar.dart';
 
@@ -18,21 +19,49 @@ abstract class BaseResultsScreen<T> extends StatefulWidget {
   State<BaseResultsScreen<T>> createState();
 }
 
-abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
+abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>>
+    with SingleTickerProviderStateMixin {
   late TextEditingController searchController;
   bool isLoading = false;
   String? errorMessage;
   late List<T> items;
   int? totalResults;
+  final ScrollController _scrollController = ScrollController();
+  late AnimationController _animationController;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
     searchController = TextEditingController(text: widget.initialQuery);
     items = widget.initialItems;
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, -1),
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _scrollController.addListener(_scrollListener);
+
     totalResults = widget.totalResults ?? items.length;
     if (items.isEmpty && !isLoading) {
       errorMessage = null;
+    }
+  }
+
+  void _scrollListener() {
+    final ScrollDirection direction =
+        _scrollController.position.userScrollDirection;
+    if (direction == ScrollDirection.reverse) {
+      _animationController.forward();
+    } else if (direction == ScrollDirection.forward) {
+      _animationController.reverse();
     }
   }
 
@@ -52,6 +81,8 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
   @override
   void dispose() {
     searchController.dispose();
+    _scrollController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -65,72 +96,85 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E9), // Creamy off-white
-      appBar: AppBar(
-        title: Text(
-          appBarTitle,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 2,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                // ignore: deprecated_member_use
-                const Color(0xFFF8E8B0).withOpacity(0.5), // Light gold hint
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          // Subtle Heading
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Row(
-              children: [
-                Text(
-                  "Search Results",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Georgia',
-                    color: Colors.black87,
+      backgroundColor: const Color(0xFFF8F1E9),
+      body: NestedScrollView(
+        controller: _scrollController,
+        headerSliverBuilder: (context, innerBoxIsScrolled) {
+          return [
+            SliverAppBar(
+              title: Text(
+                appBarTitle,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              backgroundColor: Colors.white,
+              elevation: 2,
+              pinned: true,
+              floating: true,
+              flexibleSpace: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white,
+                      // ignore: deprecated_member_use
+                      const Color(0xFFF8E8B0).withOpacity(0.5),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 40,
-                  height: 2,
-                  color: const Color(0xFFD4AF37), // Gold accent
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: ClipRect(
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Search Results",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Georgia',
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              width: 40,
+                              height: 2,
+                              color: const Color(0xFFD4AF37),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ResSearchBar(
+                        controller: searchController,
+                        onSearch: () => performSearch(searchController.text),
+                        isLoading: isLoading,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-          ResSearchBar(
-            controller: searchController,
-            onSearch: () => performSearch(searchController.text),
-            isLoading: isLoading,
-          ),
-          Expanded(
-            child: ResultsList<T>(
-              state: listState,
-              items: items,
-              itemBuilder: buildListItem,
-              errorMessage: errorMessage,
-              query: searchController.text,
-              totalResults: totalResults,
-            ),
-          ),
-        ],
+          ];
+        },
+        body: ResultsList<T>(
+          state: listState,
+          items: items,
+          itemBuilder: buildListItem,
+          errorMessage: errorMessage,
+          query: searchController.text,
+          totalResults: totalResults,
+        ),
       ),
     );
   }
