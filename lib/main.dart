@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "T Search",
+      title: "Torret Seach",
       theme: ThemeData(primarySwatch: Colors.blue),
       home: SearchScreen(),
     );
