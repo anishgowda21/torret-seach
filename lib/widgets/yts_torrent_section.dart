@@ -1,5 +1,3 @@
-// lib/widgets/yts_torrent_section.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_app/model/yts_search_result.dart';
@@ -64,8 +62,10 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
     // Theme colors
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     final primaryColor = Theme.of(context).primaryColor;
-    final sectionBgColor = isDarkMode ? Color(0xFF252525) : Colors.white;
-    final headerBgColor = isDarkMode ? Color(0xFF303030) : Colors.grey[100];
+
+    // Use black background in dark mode to match 1337x screens
+    final sectionBgColor = isDarkMode ? Colors.black : Colors.white;
+    final headerBgColor = isDarkMode ? Color(0xFF222222) : Colors.grey[100];
 
     return Material(
       color: sectionBgColor,

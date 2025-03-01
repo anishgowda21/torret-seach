@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:my_app/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -12,30 +14,43 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E9), // Soft off-white
+      backgroundColor:
+          isDarkMode
+              ? Colors.black
+              : const Color(0xFFF8F1E9), // Dark mode: black, Light mode: cream
       appBar: AppBar(
         title: Text(
           'Settings',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         elevation: 2,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                // ignore: deprecated_member_use
-                const Color(0xFFF8E8B0).withOpacity(0.5), // Light gold hint
-              ],
+              colors:
+                  isDarkMode
+                      ? [Colors.black, Colors.black]
+                      : [
+                        Colors.white,
+                        const Color(
+                          0xFFF8E8B0,
+                        ).withOpacity(0.5), // Light gold hint
+                      ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -59,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Georgia',
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.white : Colors.black,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -161,15 +176,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required IconData icon,
     required List<Widget> children,
   }) {
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            // ignore: deprecated_member_use
-            color: Colors.black.withOpacity(0.05),
+            color:
+                isDarkMode
+                    ? Colors.black.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -183,21 +204,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                Icon(icon, color: const Color(0xFFD4AF37)),
+                Icon(icon, color: primaryColor),
                 const SizedBox(width: 8),
                 Text(
                   title,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: textColor,
                   ),
                 ),
               ],
             ),
           ),
-          // ignore: deprecated_member_use
-          Divider(height: 1, thickness: 1, color: Colors.grey.withOpacity(0.1)),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: isDarkMode ? Colors.grey[800] : Colors.grey.withOpacity(0.1),
+          ),
           // Section items
           ...children,
         ],
@@ -211,6 +235,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required Widget? trailing,
     VoidCallback? onTap,
   }) {
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final secondaryTextColor = isDarkMode ? Colors.grey[400] : Colors.grey[600];
+
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -223,12 +251,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: textColor,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: secondaryTextColor),
                   ),
                 ],
               ),

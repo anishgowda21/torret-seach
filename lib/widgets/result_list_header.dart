@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:my_app/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -24,12 +22,13 @@ class ResultListHeader extends StatelessWidget {
     // Use color scheme for container background
     final backgroundColor =
         isDarkMode
-            ? Theme.of(context).cardColor.withOpacity(0.7)
+            ? Color(0xFF333333) // Dark gray to match 1337x design
             : Theme.of(context).colorScheme.surfaceContainerHighest;
 
     // Use color scheme for text
     final textColor = Theme.of(
       context,
+      // ignore: deprecated_member_use
     ).textTheme.bodyMedium?.color?.withOpacity(0.7);
 
     return Container(

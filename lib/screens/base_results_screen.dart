@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:my_app/providers/theme_provider.dart';
 import 'package:my_app/widgets/results_list.dart';
 import 'package:my_app/widgets/res_search_bar.dart';
+import 'package:provider/provider.dart';
 
 abstract class BaseResultsScreen<T> extends StatefulWidget {
   final List<T> initialItems;
@@ -95,8 +97,19 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final primaryColor = Theme.of(context).primaryColor;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+
+    // Use completely black background for dark mode, matching 1337x screens
+    final backgroundColor =
+        isDarkMode
+            ? Colors.black
+            : const Color(0xFFF8F1E9); // Original light cream color
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E9),
+      backgroundColor: backgroundColor,
       body: NestedScrollView(
         controller: _scrollController,
         headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -104,23 +117,26 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>>
             SliverAppBar(
               title: Text(
                 appBarTitle,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
-              backgroundColor: Colors.white,
+              backgroundColor: isDarkMode ? Colors.black : Colors.white,
               elevation: 2,
               pinned: true,
               floating: true,
               flexibleSpace: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      Colors.white,
-                      // ignore: deprecated_member_use
-                      const Color(0xFFF8E8B0).withOpacity(0.5),
-                    ],
+                    colors:
+                        isDarkMode
+                            ? [Colors.black, Colors.black]
+                            : [
+                              Colors.white,
+                              // ignore: deprecated_member_use
+                              const Color(0xFFF8E8B0).withOpacity(0.5),
+                            ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -143,14 +159,14 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>>
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'Georgia',
-                                color: Colors.black87,
+                                color: textColor,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Container(
                               width: 40,
                               height: 2,
-                              color: const Color(0xFFD4AF37),
+                              color: primaryColor,
                             ),
                           ],
                         ),

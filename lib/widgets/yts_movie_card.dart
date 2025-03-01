@@ -35,23 +35,14 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
-    // Get theme colors
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-    final secondaryTextColor = Theme.of(
-      context,
-    ).textTheme.bodyMedium?.color?.withOpacity(0.7);
-    final primaryColor = Theme.of(context).primaryColor;
+    // Use the consistent gold color from theme instead of purple
+    final primaryColor = Theme.of(context).primaryColor; // Gold
+
+    // For dark mode, use dark backgrounds matching 1337x
     final cardColor =
         isDarkMode
-            ? Color.fromARGB(
-              255,
-              40,
-              35,
-              30,
-            ) // Darker creamy color for dark mode
+            ? Color(0xFF1E1E1E) // Dark card color matching 1337x
             : Color.fromARGB(255, 243, 229, 215); // Original creamy color
-    final buttonBackgroundColor =
-        isDarkMode ? Color.fromARGB(255, 50, 50, 50) : Colors.grey[50];
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -63,29 +54,26 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Movie header section with image and details - this stays fixed
-          _buildMovieHeader(movie, isDarkMode, primaryColor),
+          _buildMovieHeader(movie),
 
           // Movie information section
-          Padding(
+          Container(
+            color: isDarkMode ? Color(0xFF272727) : Colors.transparent,
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title, year and language row
-                _buildTitleSection(movie, textColor, secondaryTextColor),
+                _buildTitleSection(movie),
 
                 // Expandable description
                 if (movie.description.isNotEmpty)
-                  _buildDescription(
-                    movie.description,
-                    textColor,
-                    secondaryTextColor,
-                  ),
+                  _buildDescription(movie.description, primaryColor),
 
                 const SizedBox(height: 16),
 
                 // Action buttons
-                _buildActionButtons(movie, textColor, primaryColor, isDarkMode),
+                _buildActionButtons(movie, primaryColor, isDarkMode),
               ],
             ),
           ),
@@ -102,7 +90,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: buttonBackgroundColor,
+                  color: isDarkMode ? Colors.grey[850] : Colors.grey[50],
                   border: Border(
                     top: BorderSide(
                       color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
@@ -117,7 +105,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
                       size: 18,
-                      color: primaryColor,
+                      color: primaryColor, // Golden color instead of purple
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -125,7 +113,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                           ? 'Hide download options'
                           : 'Show download options',
                       style: TextStyle(
-                        color: primaryColor,
+                        color: primaryColor, // Golden color instead of purple
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -145,7 +133,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildMovieHeader(Movie movie, bool isDarkMode, Color primaryColor) {
+  Widget _buildMovieHeader(Movie movie) {
     return Stack(
       children: [
         // Movie cover image - precached to avoid flickering
@@ -229,11 +217,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildTitleSection(
-    Movie movie,
-    Color? textColor,
-    Color? secondaryTextColor,
-  ) {
+  Widget _buildTitleSection(Movie movie) {
     final title = movie.name.isEmpty ? "Unknown Title" : movie.name;
     final year = movie.year == 0 ? "" : " (${movie.year})";
     final language = _getFullLanguageName(movie.language);
@@ -243,20 +227,16 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
       children: [
         Text(
           "$title$year",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         Row(
           children: [
-            Icon(Icons.language, size: 16, color: secondaryTextColor),
+            Icon(Icons.language, size: 16, color: Colors.grey[600]),
             const SizedBox(width: 4),
             Text(
               language,
-              style: TextStyle(fontSize: 14, color: secondaryTextColor),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -265,21 +245,13 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildDescription(
-    String description,
-    Color? textColor,
-    Color? secondaryTextColor,
-  ) {
+  Widget _buildDescription(String description, Color primaryColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Description',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: textColor,
-          ),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         AnimatedCrossFade(
@@ -287,12 +259,9 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
             description,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 14, color: secondaryTextColor),
+            style: TextStyle(fontSize: 14),
           ),
-          secondChild: Text(
-            description,
-            style: TextStyle(fontSize: 14, color: secondaryTextColor),
-          ),
+          secondChild: Text(description, style: TextStyle(fontSize: 14)),
           crossFadeState:
               _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: Duration(milliseconds: 300),
@@ -308,12 +277,12 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
             children: [
               Text(
                 _expanded ? 'Show less' : 'Read more',
-                style: TextStyle(color: Theme.of(context).primaryColor),
+                style: TextStyle(color: primaryColor), // Gold instead of purple
               ),
               Icon(
                 _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                 size: 16,
-                color: Theme.of(context).primaryColor,
+                color: primaryColor, // Gold instead of purple
               ),
             ],
           ),
@@ -322,12 +291,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildActionButtons(
-    Movie movie,
-    Color? textColor,
-    Color primaryColor,
-    bool isDarkMode,
-  ) {
+  Widget _buildActionButtons(Movie movie, Color primaryColor, bool isDarkMode) {
     return Row(
       children: [
         if (movie.imdb.isNotEmpty)
@@ -339,7 +303,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               icon: const Icon(Icons.open_in_new, size: 16),
               label: const Text('View on IMDb'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
+                backgroundColor: primaryColor, // Gold instead of purple
                 foregroundColor: isDarkMode ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
