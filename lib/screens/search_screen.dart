@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/services/search_service_provider.dart';
+import 'package:my_app/widgets/l1337x_search_parameters.dart';
 import 'package:my_app/widgets/service_selection_dropdown.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -18,13 +20,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentService = _serviceProvider.currentService;
+    final bool isL1337xService = currentService.serviceId == 'l1337x';
+
     return Scaffold(
       // Creamy Background
-      backgroundColor: const Color(0xFFF8F1E9), // Soft off-white
+      backgroundColor: const Color(0xFFF8F1E9),
       body: SafeArea(
         child: Column(
           children: [
-            // Elegant Heading
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 40, 16, 20),
               child: Column(
@@ -35,19 +39,18 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Georgia', // Serif font for class
+                      fontFamily: 'Georgia',
                       color: Colors.black87,
                     ),
                   ),
                   Container(
                     width: 80,
                     height: 2,
-                    color: const Color(0xFFD4AF37), // Gold accent
+                    color: const Color(0xFFD4AF37),
                   ),
                 ],
               ),
             ),
-            // Centered Search UI
             Expanded(
               child: Center(
                 child: Card(
@@ -59,11 +62,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min, // Only as big as content
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Smaller, Centered Service Selection Dropdown
                         SizedBox(
-                          width: 200, // Smaller width
+                          width: 200,
                           child: Center(
                             child: ServiceSelectionDropdown(
                               serviceProvider: _serviceProvider,
@@ -77,13 +79,18 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        // Chic TextField
+
+                        if (isL1337xService)
+                          L1337xSearchParameters(
+                            service: currentService as L1337xSearchService,
+                          ),
+
                         Container(
-                          width: 300, // Fixed width for compactness
+                          width: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: const Color(0xFFD4AF37), // Gold border
+                              color: const Color(0xFFD4AF37),
                               width: 1.5,
                             ),
                             boxShadow: [
@@ -122,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        // Elegant Button
+
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           decoration: BoxDecoration(
@@ -227,7 +234,12 @@ class _SearchScreenState extends State<SearchScreen> {
                     service.createResultsScreen(results: results, query: query),
           ),
         ).then((_) {
-          if (mounted) _searchController.clear();
+          if (mounted) {
+            _searchController.clear();
+            if (service is L1337xSearchService) {
+              service.resetSearchParameters();
+            }
+          }
         });
       }
     } catch (e) {

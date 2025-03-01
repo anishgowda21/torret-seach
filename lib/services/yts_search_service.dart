@@ -101,7 +101,7 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
     try {
       final response = await http
           .get(Uri.parse('$baseUrl/yts'))
-          .timeout(Duration(seconds: 3));
+          .timeout(Duration(seconds: 5));
 
       return response.statusCode == 200;
     } catch (_) {

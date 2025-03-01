@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/services/search_service.dart';
 import 'package:my_app/services/yts_search_service.dart';
 
@@ -41,6 +42,7 @@ class SearchServiceProvider extends ChangeNotifier {
 
   void _initializeServices() {
     _services.add(YtsSearchService());
+    _services.add(L1337xSearchService());
 
     if (_services.isNotEmpty) {
       _currentService = _services.first;
