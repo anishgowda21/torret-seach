@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_app/model/yts_search_result.dart';
+import 'package:my_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class YtsTorrentSection extends StatefulWidget {
@@ -56,25 +58,38 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
       return const SizedBox.shrink();
     }
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    // Theme colors
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final primaryColor = Theme.of(context).primaryColor;
+    final sectionBgColor = isDarkMode ? Color(0xFF252525) : Colors.white;
+    final headerBgColor = isDarkMode ? Color(0xFF303030) : Colors.grey[100];
+
     return Material(
-      color: Colors.white,
+      color: sectionBgColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Download Options header
           Container(
-            color: Colors.grey[100],
+            color: headerBgColor,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Row(
               children: [
-                Icon(Icons.download, size: 20, color: Colors.grey[700]),
+                Icon(
+                  Icons.download,
+                  size: 20,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Download Options',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
+                    color: textColor,
                   ),
                 ),
               ],
@@ -85,9 +100,10 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
           TabBar(
             controller: _tabController,
             isScrollable: true,
-            labelColor: const Color(0xFF6750A4),
-            unselectedLabelColor: Colors.grey[700],
-            indicatorColor: const Color(0xFF6750A4),
+            labelColor: primaryColor,
+            unselectedLabelColor:
+                isDarkMode ? Colors.grey[400] : Colors.grey[700],
+            indicatorColor: primaryColor,
             tabs:
                 types.map((type) {
                   final count = widget.groupedTorrents[type]?.length ?? 0;
@@ -104,7 +120,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                           ),
                           decoration: BoxDecoration(
                             // ignore: deprecated_member_use
-                            color: const Color(0xFF6750A4).withOpacity(0.2),
+                            color: primaryColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -129,7 +145,12 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
               children:
                   types.map((type) {
                     final typeTorrents = widget.groupedTorrents[type] ?? [];
-                    return _buildTorrentList(typeTorrents);
+                    return _buildTorrentList(
+                      typeTorrents,
+                      isDarkMode,
+                      primaryColor,
+                      textColor,
+                    );
                   }).toList(),
             ),
           ),
@@ -138,7 +159,18 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
     );
   }
 
-  Widget _buildTorrentList(List<Torrent> torrents) {
+  Widget _buildTorrentList(
+    List<Torrent> torrents,
+    bool isDarkMode,
+    Color primaryColor,
+    Color? textColor,
+  ) {
+    final cardBgColor = isDarkMode ? Color(0xFF1E1E1E) : Colors.white;
+    final codeBoxColor = isDarkMode ? Color(0xFF1A1A1A) : Colors.grey[100]!;
+    final codeBoxBorderColor =
+        isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final buttonBgColor = isDarkMode ? Color(0xFF303030) : Colors.grey[50]!;
+
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       itemCount: torrents.length,
@@ -150,6 +182,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
           elevation: 1,
+          color: cardBgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -178,7 +211,10 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _getQualityColor(torrent.quality),
+                          color: _getQualityColor(
+                            torrent.quality,
+                            primaryColor,
+                          ),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -207,6 +243,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
+                              color: textColor,
                             ),
                           ),
                         ],
@@ -228,6 +265,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
+                              color: textColor,
                             ),
                           ),
                         ],
@@ -240,6 +278,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 12,
+                          color: textColor,
                         ),
                       ),
 
@@ -251,7 +290,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             ? Icons.keyboard_arrow_up
                             : Icons.keyboard_arrow_down,
                         size: 16,
-                        color: Colors.grey[600],
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       ),
                     ],
                   ),
@@ -263,7 +302,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: buttonBgColor,
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(12),
                       bottomRight: Radius.circular(12),
@@ -278,14 +317,20 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                           Icon(
                             Icons.calendar_today,
                             size: 14,
-                            color: Colors.grey[600],
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'Uploaded: ${torrent.uploadDate}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[400]
+                                      : Colors.grey[600],
                             ),
                           ),
                         ],
@@ -305,6 +350,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
+                                  color: textColor,
                                 ),
                               ),
                               GestureDetector(
@@ -316,9 +362,7 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                                 child: Text(
                                   'Copy',
                                   style: TextStyle(
-                                    color: const Color(
-                                      0xFF6750A4,
-                                    ), // Purple to match IMDB button
+                                    color: primaryColor,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
@@ -331,15 +375,18 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                             width: double.infinity,
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: codeBoxColor,
                               borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: Colors.grey[300]!),
+                              border: Border.all(color: codeBoxBorderColor),
                             ),
                             child: Text(
                               torrent.magnet,
                               style: TextStyle(
                                 fontSize: 11,
-                                color: Colors.grey[800],
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[400]
+                                        : Colors.grey[800],
                                 fontFamily: 'monospace',
                               ),
                               maxLines: 2,
@@ -357,15 +404,12 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
                         child: ElevatedButton(
                           onPressed: () => _openMagnet(torrent.magnet),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(
-                              0xFF6750A4,
-                            ), // Purple to match IMDB button
-                            foregroundColor: Colors.white,
+                            backgroundColor: primaryColor,
+                            foregroundColor:
+                                isDarkMode ? Colors.black : Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                24,
-                              ), // More rounded like Image 2
+                              borderRadius: BorderRadius.circular(24),
                             ),
                           ),
                           child: Row(
@@ -392,14 +436,14 @@ class _YtsTorrentSectionState extends State<YtsTorrentSection>
     );
   }
 
-  Color _getQualityColor(String quality) {
+  Color _getQualityColor(String quality, Color primaryColor) {
     quality = quality.toLowerCase();
     if (quality.contains('720p')) {
       return Colors.blue;
     }
     if (quality.contains('1080p')) {
-      return const Color(0xFF6750A4);
-    } // Purple to match theme
+      return primaryColor;
+    }
     if (quality.contains('2160p') || quality.contains('4k')) {
       return Colors.red;
     }

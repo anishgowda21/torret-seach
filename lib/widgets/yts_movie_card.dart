@@ -1,9 +1,11 @@
-// lib/widgets/yts_movie_card.dart
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:language_picker/languages.dart';
 import 'package:my_app/model/yts_search_result.dart';
+import 'package:my_app/providers/theme_provider.dart';
 import 'package:my_app/widgets/yts_torrent_section.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class YtsMovieCard extends StatefulWidget {
@@ -30,18 +32,38 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
   Widget build(BuildContext context) {
     final movie = widget.movie;
     final hasTorrents = movie.torrents.isNotEmpty;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    // Get theme colors
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final secondaryTextColor = Theme.of(
+      context,
+    ).textTheme.bodyMedium?.color?.withOpacity(0.7);
+    final primaryColor = Theme.of(context).primaryColor;
+    final cardColor =
+        isDarkMode
+            ? Color.fromARGB(
+              255,
+              40,
+              35,
+              30,
+            ) // Darker creamy color for dark mode
+            : Color.fromARGB(255, 243, 229, 215); // Original creamy color
+    final buttonBackgroundColor =
+        isDarkMode ? Color.fromARGB(255, 50, 50, 50) : Colors.grey[50];
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       clipBehavior: Clip.antiAlias, // Ensures image corners match card
       elevation: 3,
-      color: const Color.fromARGB(255, 243, 229, 215),
+      color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Movie header section with image and details - this stays fixed
-          _buildMovieHeader(movie),
+          _buildMovieHeader(movie, isDarkMode, primaryColor),
 
           // Movie information section
           Padding(
@@ -50,16 +72,20 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title, year and language row
-                _buildTitleSection(movie),
+                _buildTitleSection(movie, textColor, secondaryTextColor),
 
                 // Expandable description
                 if (movie.description.isNotEmpty)
-                  _buildDescription(movie.description),
+                  _buildDescription(
+                    movie.description,
+                    textColor,
+                    secondaryTextColor,
+                  ),
 
                 const SizedBox(height: 16),
 
                 // Action buttons
-                _buildActionButtons(movie),
+                _buildActionButtons(movie, textColor, primaryColor, isDarkMode),
               ],
             ),
           ),
@@ -76,8 +102,12 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  border: Border(top: BorderSide(color: Colors.grey[300]!)),
+                  color: buttonBackgroundColor,
+                  border: Border(
+                    top: BorderSide(
+                      color: isDarkMode ? Colors.grey[800]! : Colors.grey[300]!,
+                    ),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -87,9 +117,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                           ? Icons.keyboard_arrow_up
                           : Icons.keyboard_arrow_down,
                       size: 18,
-                      color: const Color(
-                        0xFF6750A4,
-                      ), // Purple to match other elements
+                      color: primaryColor,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -97,9 +125,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
                           ? 'Hide download options'
                           : 'Show download options',
                       style: TextStyle(
-                        color: const Color(
-                          0xFF6750A4,
-                        ), // Purple to match other elements
+                        color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -119,7 +145,7 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildMovieHeader(Movie movie) {
+  Widget _buildMovieHeader(Movie movie, bool isDarkMode, Color primaryColor) {
     return Stack(
       children: [
         // Movie cover image - precached to avoid flickering
@@ -140,7 +166,6 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                // ignore: deprecated_member_use
                 colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
               ),
             ),
@@ -204,7 +229,11 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildTitleSection(Movie movie) {
+  Widget _buildTitleSection(
+    Movie movie,
+    Color? textColor,
+    Color? secondaryTextColor,
+  ) {
     final title = movie.name.isEmpty ? "Unknown Title" : movie.name;
     final year = movie.year == 0 ? "" : " (${movie.year})";
     final language = _getFullLanguageName(movie.language);
@@ -214,16 +243,20 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
       children: [
         Text(
           "$title$year",
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
         const SizedBox(height: 4),
         Row(
           children: [
-            Icon(Icons.language, size: 16, color: Colors.grey[600]),
+            Icon(Icons.language, size: 16, color: secondaryTextColor),
             const SizedBox(width: 4),
             Text(
               language,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: secondaryTextColor),
             ),
           ],
         ),
@@ -232,13 +265,21 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildDescription(String description) {
+  Widget _buildDescription(
+    String description,
+    Color? textColor,
+    Color? secondaryTextColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Description',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
         ),
         const SizedBox(height: 8),
         AnimatedCrossFade(
@@ -246,9 +287,12 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
             description,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(fontSize: 14, color: secondaryTextColor),
           ),
-          secondChild: Text(description, style: TextStyle(fontSize: 14)),
+          secondChild: Text(
+            description,
+            style: TextStyle(fontSize: 14, color: secondaryTextColor),
+          ),
           crossFadeState:
               _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: Duration(milliseconds: 300),
@@ -262,10 +306,14 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_expanded ? 'Show less' : 'Read more'),
+              Text(
+                _expanded ? 'Show less' : 'Read more',
+                style: TextStyle(color: Theme.of(context).primaryColor),
+              ),
               Icon(
                 _expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                 size: 16,
+                color: Theme.of(context).primaryColor,
               ),
             ],
           ),
@@ -274,7 +322,12 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
     );
   }
 
-  Widget _buildActionButtons(Movie movie) {
+  Widget _buildActionButtons(
+    Movie movie,
+    Color? textColor,
+    Color primaryColor,
+    bool isDarkMode,
+  ) {
     return Row(
       children: [
         if (movie.imdb.isNotEmpty)
@@ -286,14 +339,10 @@ class _YtsMovieCardState extends State<YtsMovieCard> {
               icon: const Icon(Icons.open_in_new, size: 16),
               label: const Text('View on IMDb'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(
-                  0xFF6750A4,
-                ), // Purple to match theme
-                foregroundColor: Colors.white,
+                backgroundColor: primaryColor,
+                foregroundColor: isDarkMode ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    24,
-                  ), // Rounded like other buttons
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
             ),
