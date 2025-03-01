@@ -81,6 +81,7 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>> {
             gradient: LinearGradient(
               colors: [
                 Colors.white,
+                // ignore: deprecated_member_use
                 const Color(0xFFF8E8B0).withOpacity(0.5), // Light gold hint
               ],
               begin: Alignment.topLeft,
