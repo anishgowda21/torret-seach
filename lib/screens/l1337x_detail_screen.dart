@@ -113,6 +113,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 // Seeds
                 Container(
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -142,6 +143,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 // Leeches
                 Container(
                   decoration: BoxDecoration(
+                    // ignore: deprecated_member_use
                     color: Colors.red.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -391,6 +393,8 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Magnet link copied to clipboard'),
@@ -405,6 +409,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Could not open magnet link: $e'),

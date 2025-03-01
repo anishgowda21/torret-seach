@@ -2,44 +2,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
+import 'package:my_app/widgets/service_search_parameters.dart';
 
-class L1337xSearchParameters extends StatefulWidget {
-  final L1337xSearchService service;
-
-  const L1337xSearchParameters({super.key, required this.service});
+class L1337xSearchParameters extends ServiceSearchParameters {
+  const L1337xSearchParameters({
+    super.key,
+    required L1337xSearchService super.service,
+  });
 
   @override
   State<L1337xSearchParameters> createState() => _L1337xSearchParametersState();
 }
 
 class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
-  final TextEditingController _seasonController = TextEditingController();
-  final TextEditingController _episodeController = TextEditingController();
-  bool _showTvOptions = false;
+  bool _showAdvancedOptions = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _updateTvOptionsVisibility();
-  }
+  L1337xSearchService get searchService =>
+      widget.service as L1337xSearchService;
 
   @override
   void dispose() {
-    _seasonController.dispose();
-    _episodeController.dispose();
     super.dispose();
-  }
-
-  void _updateTvOptionsVisibility() {
-    setState(() {
-      _showTvOptions = widget.service.category == 'TV';
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
@@ -51,10 +40,12 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Category Dropdown
+          // Basic Options Row (Category + Advanced Toggle)
           Row(
             children: [
+              // Category Dropdown
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,8 +70,8 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                         ),
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: widget.service.category,
+                        child: DropdownButton<String?>(
+                          value: searchService.category,
                           icon: const Icon(
                             Icons.arrow_drop_down,
                             color: Color(0xFFD4AF37),
@@ -91,24 +82,29 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                           hint: Text('All Categories'),
                           onChanged: (String? newValue) {
                             setState(() {
-                              widget.service.category = newValue;
-                              _updateTvOptionsVisibility();
+                              searchService.category = newValue;
                             });
                           },
                           items:
-                              <String>[
-                                'Movies',
-                                'TV',
-                                'Games',
-                                'Music',
-                                'Apps',
-                                'Documentaries',
-                                'Anime',
-                                'Other',
-                              ].map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
+                              <Map<String, String?>>[
+                                {'display': 'All Categories', 'value': null},
+                                {'display': 'Movies', 'value': 'Movies'},
+                                {'display': 'TV', 'value': 'TV'},
+                                {'display': 'Games', 'value': 'Games'},
+                                {'display': 'Music', 'value': 'Music'},
+                                {'display': 'Apps', 'value': 'Apps'},
+                                {
+                                  'display': 'Documentaries',
+                                  'value': 'Documentaries',
+                                },
+                                {'display': 'Anime', 'value': 'Anime'},
+                                {'display': 'Other', 'value': 'Other'},
+                              ].map<DropdownMenuItem<String?>>((
+                                Map<String, String?> item,
+                              ) {
+                                return DropdownMenuItem<String?>(
+                                  value: item['value'],
+                                  child: Text(item['display']!),
                                 );
                               }).toList(),
                         ),
@@ -117,16 +113,73 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                   ],
                 ),
               ),
+              SizedBox(width: 8),
+              // Advanced Options Toggle Button
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    child: Text(
+                      'Options',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _showAdvancedOptions = !_showAdvancedOptions;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37),
+                          width: 1,
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            _showAdvancedOptions ? 'Hide' : 'Show',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(
+                            _showAdvancedOptions
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            size: 16,
+                            color: Color(0xFFD4AF37),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
 
-          // TV-specific options (Season/Episode)
-          if (_showTvOptions)
+          // Advanced options (Sort & Order) - Only shown when advanced toggle is on
+          if (_showAdvancedOptions)
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Row(
                 children: [
-                  // Season Input
+                  // Sort Dropdown
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +187,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                         Padding(
                           padding: const EdgeInsets.only(left: 4, bottom: 4),
                           child: Text(
-                            'Season',
+                            'Sort By',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -150,28 +203,47 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                               width: 1,
                             ),
                           ),
-                          child: TextField(
-                            controller: _seasonController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: 'Season #',
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String?>(
+                              value: searchService.sort,
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                                color: Color(0xFFD4AF37),
                               ),
-                              border: InputBorder.none,
+                              isExpanded: true,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              borderRadius: BorderRadius.circular(8),
+                              hint: Text('Seeders'),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  searchService.sort = newValue;
+                                });
+                              },
+                              items:
+                                  <Map<String, String?>>[
+                                    {'display': 'Seeders', 'value': null},
+                                    {'display': 'Time', 'value': 'time'},
+                                    {'display': 'Size', 'value': 'size'},
+                                    {
+                                      'display': 'Leechers',
+                                      'value': 'leechers',
+                                    },
+                                  ].map<DropdownMenuItem<String?>>((
+                                    Map<String, String?> item,
+                                  ) {
+                                    return DropdownMenuItem<String?>(
+                                      value: item['value'],
+                                      child: Text(item['display']!),
+                                    );
+                                  }).toList(),
                             ),
-                            onChanged: (value) {
-                              widget.service.season =
-                                  value.isEmpty ? null : int.tryParse(value);
-                            },
                           ),
                         ),
                       ],
                     ),
                   ),
                   SizedBox(width: 12),
-                  // Episode Input
+                  // Order Dropdown
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +251,7 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                         Padding(
                           padding: const EdgeInsets.only(left: 4, bottom: 4),
                           child: Text(
-                            'Episode',
+                            'Order',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
@@ -195,21 +267,34 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                               width: 1,
                             ),
                           ),
-                          child: TextField(
-                            controller: _episodeController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: 'Episode #',
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: searchService.order,
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                                color: Color(0xFFD4AF37),
                               ),
-                              border: InputBorder.none,
+                              isExpanded: true,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              borderRadius: BorderRadius.circular(8),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  searchService.order = newValue;
+                                });
+                              },
+                              items:
+                                  <Map<String, String>>[
+                                    {'display': 'Descending', 'value': 'desc'},
+                                    {'display': 'Ascending', 'value': 'asc'},
+                                  ].map<DropdownMenuItem<String>>((
+                                    Map<String, String> item,
+                                  ) {
+                                    return DropdownMenuItem<String>(
+                                      value: item['value']!,
+                                      child: Text(item['display']!),
+                                    );
+                                  }).toList(),
                             ),
-                            onChanged: (value) {
-                              widget.service.episode =
-                                  value.isEmpty ? null : int.tryParse(value);
-                            },
                           ),
                         ),
                       ],
@@ -218,136 +303,6 @@ class _L1337xSearchParametersState extends State<L1337xSearchParameters> {
                 ],
               ),
             ),
-
-          // Sort & Order
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Row(
-              children: [
-                // Sort Dropdown
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 4),
-                        child: Text(
-                          'Sort By',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFD4AF37),
-                            width: 1,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: widget.service.sort,
-                            icon: const Icon(
-                              Icons.arrow_drop_down,
-                              color: Color(0xFFD4AF37),
-                            ),
-                            isExpanded: true,
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            borderRadius: BorderRadius.circular(8),
-                            hint: Text('Seeders'),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                widget.service.sort = newValue;
-                              });
-                            },
-                            items:
-                                <String>[
-                                  'time',
-                                  'size',
-                                  'seeders',
-                                  'leechers',
-                                ].map<DropdownMenuItem<String>>((String value) {
-                                  String displayName =
-                                      value.substring(0, 1).toUpperCase() +
-                                      value.substring(1);
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(displayName),
-                                  );
-                                }).toList(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12),
-                // Order Dropdown
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4, bottom: 4),
-                        child: Text(
-                          'Order',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: const Color(0xFFD4AF37),
-                            width: 1,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: widget.service.order,
-                            icon: const Icon(
-                              Icons.arrow_drop_down,
-                              color: Color(0xFFD4AF37),
-                            ),
-                            isExpanded: true,
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            borderRadius: BorderRadius.circular(8),
-                            onChanged: (String? newValue) {
-                              setState(() {
-                                widget.service.order = newValue;
-                              });
-                            },
-                            items:
-                                <String>[
-                                  'desc',
-                                  'asc',
-                                ].map<DropdownMenuItem<String>>((String value) {
-                                  String displayName =
-                                      value == 'desc'
-                                          ? 'Descending'
-                                          : 'Ascending';
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(displayName),
-                                  );
-                                }).toList(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

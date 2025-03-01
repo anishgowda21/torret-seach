@@ -52,7 +52,7 @@ class ServiceSelectionDropdown extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             isExpanded: true,

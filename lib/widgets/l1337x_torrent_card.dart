@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/model/l1337x_search_result.dart';
-import 'package:my_app/model/l1337x_torrent_detail.dart';
 import 'package:my_app/screens/l1337x_detail_screen.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
 
-class L1337xTorrentCard extends StatelessWidget {
+class L1337xTorrentCard extends StatefulWidget {
   final L1337xTorrentItem torrent;
   final L1337xSearchService service;
 
   const L1337xTorrentCard({
-    Key? key,
+    super.key,
     required this.torrent,
     required this.service,
-  }) : super(key: key);
+  });
 
+  @override
+  State<L1337xTorrentCard> createState() => _L1337xTorrentCardState();
+}
+
+class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -33,7 +37,7 @@ class L1337xTorrentCard extends StatelessWidget {
               children: [
                 // Torrent name
                 Text(
-                  torrent.name,
+                  widget.torrent.name,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -60,7 +64,7 @@ class L1337xTorrentCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                torrent.size,
+                                widget.torrent.size,
                                 style: TextStyle(color: Colors.grey[700]),
                               ),
                             ],
@@ -75,7 +79,7 @@ class L1337xTorrentCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                torrent.date,
+                                widget.torrent.date,
                                 style: TextStyle(color: Colors.grey[700]),
                               ),
                             ],
@@ -96,7 +100,7 @@ class L1337xTorrentCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              torrent.seeds,
+                              widget.torrent.seeds,
                               style: const TextStyle(
                                 color: Colors.green,
                                 fontWeight: FontWeight.bold,
@@ -114,7 +118,7 @@ class L1337xTorrentCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              torrent.leeches,
+                              widget.torrent.leeches,
                               style: const TextStyle(
                                 color: Colors.red,
                                 fontWeight: FontWeight.bold,
@@ -136,7 +140,7 @@ class L1337xTorrentCard extends StatelessWidget {
             color: Colors.grey[50],
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ElevatedButton(
-              onPressed: () => _viewDetails(context),
+              onPressed: _viewDetails,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD4AF37),
                 foregroundColor: Colors.white,
@@ -153,8 +157,9 @@ class L1337xTorrentCard extends StatelessWidget {
     );
   }
 
-  Future<void> _viewDetails(BuildContext context) async {
+  Future<void> _viewDetails() async {
     // Show loading indicator
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -163,23 +168,37 @@ class L1337xTorrentCard extends StatelessWidget {
 
     try {
       // Fetch torrent details
-      final details = await service.getDetails(torrent.link);
+      final details = await widget.service.getDetails(widget.torrent.link);
+
+      // Check if widget is still in the tree
+      if (!mounted) return;
 
       // Remove loading indicator
       Navigator.pop(context);
+
+      // Check again after popping the dialog
+      if (!mounted) return;
 
       // Navigate to details screen
       Navigator.push(
         context,
         MaterialPageRoute(
           builder:
-              (context) =>
-                  L1337xDetailScreen(torrentDetail: details, service: service),
+              (context) => L1337xDetailScreen(
+                torrentDetail: details,
+                service: widget.service,
+              ),
         ),
       );
     } catch (e) {
+      // Check if widget is still in the tree
+      if (!mounted) return;
+
       // Remove loading indicator
       Navigator.pop(context);
+
+      // Check again after popping the dialog
+      if (!mounted) return;
 
       // Show error dialog
       showDialog(

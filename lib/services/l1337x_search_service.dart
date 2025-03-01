@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_getters_setters
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -57,17 +59,6 @@ class L1337xSearchService
   @override
   Future<L1337xSearchResult> search(String query) async {
     try {
-      if (_category == 'TV' && _season != null) {
-        final seasonStr = 'S${_season.toString().padLeft(2, '0')}';
-
-        if (_episode != null) {
-          final episodeStr = 'E${_episode.toString().padLeft(2, '0')}';
-          query = "$query $seasonStr$episodeStr";
-        } else {
-          query = "$query $seasonStr";
-        }
-      }
-
       final encodedQuery = Uri.encodeComponent(query);
       String url = '$baseUrl/1337x/search?query=$encodedQuery';
 
@@ -85,6 +76,7 @@ class L1337xSearchService
 
       if (baseUrl.isEmpty) throw Exception("API URL not configured");
 
+      print("Searching URL= ${url}");
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
       Map<String, dynamic> responseData;

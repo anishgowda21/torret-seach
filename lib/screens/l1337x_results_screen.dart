@@ -9,14 +9,12 @@ class L1337xResultsScreen extends BaseResultsScreen<L1337xTorrentItem> {
   final L1337xSearchService service;
 
   L1337xResultsScreen({
-    Key? key,
+    super.key,
     required this.initialResults,
-    required String initialQuery,
+    required super.initialQuery,
     required this.service,
   }) : super(
-         key: key,
          initialItems: initialResults.results,
-         initialQuery: initialQuery,
          totalResults: initialResults.pagination.perPageResults,
        );
 
