@@ -8,10 +8,12 @@ import 'package:my_app/model/yts_search_result.dart';
 import 'package:my_app/screens/base_results_screen.dart';
 import 'package:my_app/screens/yts_results_screen.dart';
 import 'package:my_app/services/search_service.dart';
+import 'package:my_app/utils/cache_manager.dart';
 
 class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
   final String baseUrl = dotenv.env['API_URL'] ?? '';
   final Duration timeout = Duration(seconds: 10);
+  final CacheManager _cacheManager = CacheManager();
 
   @override
   String get serviceName => 'YTS Movies';
@@ -25,6 +27,12 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
   @override
   Future<YtsSearchResult> search(String query) async {
     try {
+      final cachedResult = _cacheManager.getYtsQueryResults(query);
+
+      if (cachedResult != null) {
+        return cachedResult as YtsSearchResult;
+      }
+
       final encodedQuery = Uri.encodeComponent(query);
       final url = '$baseUrl/yts?query=$encodedQuery&img=true';
 
@@ -51,6 +59,8 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
           for (var movie in searchResponse.data) {
             movie.transformTorrents();
           }
+
+          _cacheManager.cacheYtsQueryResults(query, searchResponse);
 
           return searchResponse;
         } catch (e) {

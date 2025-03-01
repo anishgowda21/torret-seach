@@ -58,7 +58,7 @@ class L1337xSearchService
     try {
       final currentPage = page ?? _currentPage;
 
-      final cachedResult = _cacheManager.getCachedSearchResults(
+      final cachedResult = _cacheManager.get1337xCachedSearchResults(
         query,
         _category,
         _sort,
@@ -105,7 +105,7 @@ class L1337xSearchService
       if (response.statusCode == 200) {
         try {
           final searchResponse = L1337xSearchResult.fromJson(responseData);
-          _cacheManager.cacheSearchResults(
+          _cacheManager.cache1337xSearchResults(
             query,
             _category,
             _sort,
@@ -137,7 +137,7 @@ class L1337xSearchService
 
   Future<L1337xTorrentDetail> getDetails(String link) async {
     try {
-      final cachedDetail = _cacheManager.getCachedDetails(link);
+      final cachedDetail = _cacheManager.get1337xCachedDetails(link);
 
       if (cachedDetail != null) {
         return cachedDetail as L1337xTorrentDetail;
@@ -163,7 +163,7 @@ class L1337xSearchService
       if (response.statusCode == 200) {
         try {
           final detailResponse = L1337xTorrentDetail.fromJson(responseData);
-          _cacheManager.cacheDetails(link, detailResponse);
+          _cacheManager.cache1337xDetails(link, detailResponse);
 
           return detailResponse;
         } catch (e) {
