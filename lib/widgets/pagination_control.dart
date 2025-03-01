@@ -1,5 +1,3 @@
-// lib/widgets/pagination_control.dart
-
 import 'package:flutter/material.dart';
 
 class PaginationControl extends StatelessWidget {
@@ -18,8 +16,9 @@ class PaginationControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Always show pagination, even on last page
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -30,56 +29,31 @@ class PaginationControl extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Page slider
-          Row(
-            children: [
-              Text(
-                'Page:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          // Left side - page indicator
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD4AF37),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              '$currentPage / $totalPages',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
-              Expanded(
-                child: Slider(
-                  value: currentPage.toDouble(),
-                  min: 1,
-                  max: totalPages.toDouble(),
-                  divisions: totalPages > 1 ? totalPages - 1 : 1,
-                  label: currentPage.toString(),
-                  activeColor: const Color(0xFFD4AF37),
-                  onChanged:
-                      isLoading
-                          ? null
-                          : (value) {
-                            onPageChanged(value.round());
-                          },
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD4AF37),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '$currentPage / $totalPages',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
 
-          // Page navigation buttons
+          // Right side - navigation buttons
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // First page
-              _buildPageButton(
+              _buildNavButton(
                 icon: Icons.first_page,
                 onPressed:
                     currentPage > 1 && !isLoading
@@ -88,15 +62,16 @@ class PaginationControl extends StatelessWidget {
               ),
 
               // Previous page
-              _buildPageButton(
+              _buildNavButton(
                 icon: Icons.arrow_back_ios,
+                iconSize: 16,
                 onPressed:
                     currentPage > 1 && !isLoading
                         ? () => onPageChanged(currentPage - 1)
                         : null,
               ),
 
-              // Loading indicator or spacer
+              // Loading indicator
               SizedBox(
                 width: 40,
                 height: 40,
@@ -118,8 +93,9 @@ class PaginationControl extends StatelessWidget {
               ),
 
               // Next page
-              _buildPageButton(
+              _buildNavButton(
                 icon: Icons.arrow_forward_ios,
+                iconSize: 16,
                 onPressed:
                     currentPage < totalPages && !isLoading
                         ? () => onPageChanged(currentPage + 1)
@@ -127,7 +103,7 @@ class PaginationControl extends StatelessWidget {
               ),
 
               // Last page
-              _buildPageButton(
+              _buildNavButton(
                 icon: Icons.last_page,
                 onPressed:
                     currentPage < totalPages && !isLoading
@@ -141,24 +117,27 @@ class PaginationControl extends StatelessWidget {
     );
   }
 
-  Widget _buildPageButton({
+  Widget _buildNavButton({
     required IconData icon,
     required VoidCallback? onPressed,
+    double iconSize = 20,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4),
+      margin: EdgeInsets.symmetric(horizontal: 2),
       decoration: BoxDecoration(
         color: onPressed != null ? const Color(0xFFF8E8B0) : Colors.grey[200],
         borderRadius: BorderRadius.circular(8),
       ),
       child: IconButton(
+        constraints: BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: EdgeInsets.all(8),
         icon: Icon(
           icon,
-          size: 18,
+          size: iconSize,
           color: onPressed != null ? Colors.black87 : Colors.grey,
         ),
         onPressed: onPressed,
-        splashRadius: 24,
+        splashRadius: 20,
         tooltip:
             icon == Icons.first_page
                 ? 'First Page'

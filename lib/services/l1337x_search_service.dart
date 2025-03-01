@@ -67,7 +67,6 @@ class L1337xSearchService
       );
 
       if (cachedResult != null) {
-        print("Using cached results for: $query (page $currentPage)");
         return cachedResult as L1337xSearchResult;
       }
 
@@ -93,7 +92,6 @@ class L1337xSearchService
 
       if (baseUrl.isEmpty) throw Exception("API URL not configured");
 
-      print("Searching URL= ${url}");
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
       Map<String, dynamic> responseData;
@@ -142,7 +140,6 @@ class L1337xSearchService
       final cachedDetail = _cacheManager.getCachedDetails(link);
 
       if (cachedDetail != null) {
-        print("Using cached details for: $link");
         return cachedDetail as L1337xTorrentDetail;
       }
 

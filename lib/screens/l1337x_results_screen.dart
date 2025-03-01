@@ -70,11 +70,13 @@ class L1337xResultsScreenState
         body: Column(
           children: [
             Expanded(child: baseWidget.body ?? Container()),
-            // Add pagination controls at the bottom
-            if (_totalPages > 1)
+            // Always show pagination controls if there are results
+            if (items.isNotEmpty)
               PaginationControl(
                 currentPage: _currentPage,
-                totalPages: _totalPages,
+                // Ensure total pages is at least equal to current page
+                totalPages:
+                    _totalPages > _currentPage ? _totalPages : _currentPage,
                 onPageChanged: (page) => _loadPage(page, searchController.text),
                 isLoading: _loadingPage,
               ),
@@ -104,7 +106,14 @@ class L1337xResultsScreenState
         setState(() {
           items = newResults.results;
           _currentPage = newResults.pagination.currentPage;
-          _totalPages = newResults.pagination.lastPage;
+
+          // Ensure lastPage is at least equal to currentPage
+          // This fixes instances where API returns incorrect lastPage value
+          _totalPages = Math.max(
+            newResults.pagination.lastPage,
+            newResults.pagination.currentPage,
+          );
+
           totalResults = newResults.pagination.perPageResults;
           isLoading = false;
           _loadingPage = false;
@@ -120,4 +129,9 @@ class L1337xResultsScreenState
       }
     }
   }
+}
+
+// Helper for Math operations (like Math.max)
+class Math {
+  static int max(int a, int b) => a > b ? a : b;
 }

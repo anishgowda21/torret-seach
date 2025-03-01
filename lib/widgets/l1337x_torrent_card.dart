@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_app/model/l1337x_search_result.dart';
 import 'package:my_app/screens/l1337x_detail_screen.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
+import 'package:my_app/widgets/loading_dialog.dart';
 
 class L1337xTorrentCard extends StatefulWidget {
   final L1337xTorrentItem torrent;
@@ -158,13 +159,9 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
   }
 
   Future<void> _viewDetails() async {
-    // Show loading indicator
+    // Show improved loading dialog
     if (!mounted) return;
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(child: CircularProgressIndicator()),
-    );
+    LoadingDialog.show(context, message: 'Fetching torrent details');
 
     try {
       // Fetch torrent details
@@ -173,10 +170,10 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
       // Check if widget is still in the tree
       if (!mounted) return;
 
-      // Remove loading indicator
-      Navigator.pop(context);
+      // Remove loading dialog
+      LoadingDialog.hide(context);
 
-      // Check again after popping the dialog
+      // Check again after hiding dialog
       if (!mounted) return;
 
       // Navigate to details screen
@@ -194,13 +191,11 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
       // Check if widget is still in the tree
       if (!mounted) return;
 
-      // Remove loading indicator
-      Navigator.pop(context);
-
-      // Check again after popping the dialog
-      if (!mounted) return;
+      // Remove loading dialog
+      LoadingDialog.hide(context);
 
       // Show error dialog
+      if (!mounted) return;
       showDialog(
         context: context,
         builder:
