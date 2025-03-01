@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoadingDialog extends StatelessWidget {
   final String message;
@@ -22,17 +24,36 @@ class LoadingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    // Gold colors - slightly darker for dark mode
+    final goldColor =
+        isDarkMode
+            ? const Color(0xFFA48929) // Darker gold for dark mode
+            : const Color(0xFFD4AF37); // Standard gold
+
+    final bgColor =
+        isDarkMode
+            ? const Color(0xFF2D2D2D) // Darker background for dark mode
+            : Colors.white;
+
+    final textColorPrimary = isDarkMode ? Colors.white : Colors.black87;
+
+    final textColorSecondary =
+        isDarkMode ? Colors.grey.shade300 : Colors.grey.shade600;
+
     return Dialog(
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
         padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: bgColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black26,
+              color: isDarkMode ? Colors.black54 : Colors.black26,
               blurRadius: 10,
               offset: Offset(0, 5),
             ),
@@ -48,18 +69,25 @@ class LoadingDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    const Color.fromARGB(255, 240, 235, 217), // Gold
-                    const Color.fromARGB(255, 227, 226, 224), // Light gold
-                    const Color.fromARGB(255, 207, 205, 198), // Gold
-                  ],
+                  colors:
+                      isDarkMode
+                          ? [
+                            const Color(0xFF7A6621), // Darkest gold
+                            const Color(0xFF8A7423), // Dark gold
+                            const Color(0xFFA48929), // Medium gold
+                          ]
+                          : [
+                            const Color(0xFFF8E8B0), // Light gold
+                            const Color(0xFFE7D394), // Medium light gold
+                            const Color(0xFFD4AF37), // Standard gold
+                          ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 boxShadow: [
                   BoxShadow(
                     // ignore: deprecated_member_use
-                    color: Color(0xFFD4AF37).withOpacity(0.5),
+                    color: goldColor.withOpacity(isDarkMode ? 0.3 : 0.5),
                     blurRadius: 15,
                     spreadRadius: 1,
                   ),
@@ -69,9 +97,7 @@ class LoadingDialog extends StatelessWidget {
                 padding: EdgeInsets.all(15),
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    const Color(0xFFD4AF37),
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(goldColor),
                 ),
               ),
             ),
@@ -81,14 +107,14 @@ class LoadingDialog extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: textColorPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 8),
             Text(
               'Please wait while we fetch the details',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 14, color: textColorSecondary),
               textAlign: TextAlign.center,
             ),
           ],

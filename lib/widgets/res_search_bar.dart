@@ -1,4 +1,8 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:my_app/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class ResSearchBar extends StatefulWidget {
   final TextEditingController controller;
@@ -27,6 +31,9 @@ class _ResSearchBarState extends State<ResSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Padding(
       padding: EdgeInsets.all(8),
       child: Row(
@@ -36,13 +43,14 @@ class _ResSearchBarState extends State<ResSearchBar> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFFD4AF37), // Gold border
+                  color: Theme.of(context).primaryColor, // Theme-based border
                   width: 1.5,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    // ignore: deprecated_member_use
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Theme.of(
+                      context,
+                    ).shadowColor.withOpacity(isDarkMode ? 0.3 : 0.2),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
@@ -51,9 +59,16 @@ class _ResSearchBarState extends State<ResSearchBar> {
               child: TextField(
                 controller: widget.controller,
                 focusNode: _focusNode,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
                 decoration: InputDecoration(
                   hintText: "Search...",
-                  hintStyle: TextStyle(color: Colors.grey[500]),
+                  hintStyle: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                  ),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -74,17 +89,24 @@ class _ResSearchBarState extends State<ResSearchBar> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               gradient: LinearGradient(
-                colors: [
-                  const Color(0xFFD4AF37), // Gold
-                  const Color(0xFFF8E8B0), // Light gold/ivory
-                ],
+                colors:
+                    isDarkMode
+                        ? [
+                          const Color(0xFFA48929), // Darker gold for dark mode
+                          const Color(0xFF7A6621), // Dark gold for dark mode
+                        ]
+                        : [
+                          const Color(0xFFD4AF37), // Gold
+                          const Color(0xFFF8E8B0), // Light gold/ivory
+                        ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Theme.of(
+                    context,
+                  ).shadowColor.withOpacity(isDarkMode ? 0.4 : 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -110,7 +132,9 @@ class _ResSearchBarState extends State<ResSearchBar> {
               ),
               child: Text(
                 widget.isLoading ? 'Searching...' : 'Search',
-                style: const TextStyle(color: Colors.black87),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
               ),
             ),
           ),

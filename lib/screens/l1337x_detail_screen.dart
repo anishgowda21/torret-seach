@@ -1,7 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:my_app/model/l1337x_torrent_detail.dart';
+import 'package:my_app/providers/theme_provider.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class L1337xDetailScreen extends StatefulWidget {
@@ -24,27 +28,46 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final torrent = widget.torrentDetail;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    // Get theme colors
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final primaryColor = Theme.of(context).primaryColor;
+    final cardBgColor = isDarkMode ? Color(0xFF252525) : Colors.white;
+
+    // Create a darker header gradient for dark mode
+    final headerGradient = LinearGradient(
+      colors:
+          isDarkMode
+              ? [Colors.grey[900]!, Colors.black]
+              : [Colors.grey[800]!, Colors.grey[900]!],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E9),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Torrent Details',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: isDarkMode ? Color(0xFF1A1A1A) : Colors.white,
         elevation: 2,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.white,
-                // ignore: deprecated_member_use
-                const Color(0xFFF8E8B0).withOpacity(0.5), // Light gold hint
-              ],
+              colors:
+                  isDarkMode
+                      ? [const Color(0xFF1A1A1A), const Color(0xFF2C2C2C)]
+                      : [
+                        Colors.white,
+                        const Color(0xFFF8E8B0).withOpacity(0.5),
+                      ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -58,22 +81,35 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Torrent header card
-              _buildTorrentHeaderCard(torrent),
+              _buildTorrentHeaderCard(torrent, headerGradient, isDarkMode),
 
               const SizedBox(height: 16),
 
               // Torrent metadata card
-              _buildMetadataCard(torrent),
+              _buildMetadataCard(torrent, cardBgColor, textColor, isDarkMode),
 
               const SizedBox(height: 16),
 
               // Magnet link card
-              _buildMagnetCard(torrent),
+              _buildMagnetCard(
+                torrent,
+                cardBgColor,
+                primaryColor,
+                textColor,
+                isDarkMode,
+              ),
 
               const SizedBox(height: 16),
 
               // Files card (if available)
-              if (torrent.files.isNotEmpty) _buildFilesCard(torrent),
+              if (torrent.files.isNotEmpty)
+                _buildFilesCard(
+                  torrent,
+                  cardBgColor,
+                  primaryColor,
+                  textColor,
+                  isDarkMode,
+                ),
             ],
           ),
         ),
@@ -81,7 +117,11 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
     );
   }
 
-  Widget _buildTorrentHeaderCard(L1337xTorrentDetail torrent) {
+  Widget _buildTorrentHeaderCard(
+    L1337xTorrentDetail torrent,
+    LinearGradient headerGradient,
+    bool isDarkMode,
+  ) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -90,11 +130,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            colors: [Colors.grey[800]!, Colors.grey[900]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: headerGradient,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +149,6 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 // Seeds
                 Container(
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -143,7 +178,6 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 // Leeches
                 Container(
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
                     color: Colors.red.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -173,7 +207,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 // Category tag
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD4AF37),
+                    color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   padding: const EdgeInsets.symmetric(
@@ -182,8 +216,8 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                   ),
                   child: Text(
                     torrent.category,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.black : Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),
@@ -197,32 +231,54 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
     );
   }
 
-  Widget _buildMetadataCard(L1337xTorrentDetail torrent) {
+  Widget _buildMetadataCard(
+    L1337xTorrentDetail torrent,
+    Color cardBgColor,
+    Color? textColor,
+    bool isDarkMode,
+  ) {
+    final labelColor = isDarkMode ? Colors.grey[400] : Colors.grey[700];
+
     return Card(
       elevation: 2,
+      color: cardBgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
             ),
             const SizedBox(height: 12),
-            _buildInfoRow('Size', torrent.size),
-            _buildInfoRow('Upload Date', torrent.uploadDate),
-            _buildInfoRow('Language', torrent.language),
-            _buildInfoRow('Type', torrent.type),
-            _buildInfoRow('Uploader', torrent.uploader),
+            _buildInfoRow('Size', torrent.size, labelColor, textColor),
+            _buildInfoRow(
+              'Upload Date',
+              torrent.uploadDate,
+              labelColor,
+              textColor,
+            ),
+            _buildInfoRow('Language', torrent.language, labelColor, textColor),
+            _buildInfoRow('Type', torrent.type, labelColor, textColor),
+            _buildInfoRow('Uploader', torrent.uploader, labelColor, textColor),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    Color? labelColor,
+    Color? textColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -232,21 +288,35 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
             width: 120,
             child: Text(
               label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, color: labelColor),
             ),
           ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 15))),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(fontSize: 15, color: textColor),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildMagnetCard(L1337xTorrentDetail torrent) {
+  Widget _buildMagnetCard(
+    L1337xTorrentDetail torrent,
+    Color cardBgColor,
+    Color primaryColor,
+    Color? textColor,
+    bool isDarkMode,
+  ) {
+    final codeBoxColor = isDarkMode ? Color(0xFF1A1A1A) : Colors.grey[100]!;
+    final codeBoxBorderColor =
+        isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+    final codeTextColor = isDarkMode ? Colors.grey[400]! : Colors.grey[800]!;
+
     return Card(
       elevation: 2,
+      color: cardBgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -256,21 +326,18 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Magnet Link',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () => _copyToClipboard(torrent.magnet),
-                  icon: const Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: Color(0xFFD4AF37),
-                  ),
-                  label: const Text(
-                    'Copy',
-                    style: TextStyle(color: Color(0xFFD4AF37)),
-                  ),
+                  icon: Icon(Icons.copy, size: 16, color: primaryColor),
+                  label: Text('Copy', style: TextStyle(color: primaryColor)),
                 ),
               ],
             ),
@@ -279,15 +346,15 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: codeBoxColor,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: codeBoxBorderColor),
               ),
               child: Text(
                 torrent.magnet,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[800],
+                  color: codeTextColor,
                   fontFamily: 'monospace',
                 ),
                 maxLines: 3,
@@ -302,8 +369,8 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                 icon: const Icon(Icons.download),
                 label: const Text('Download with Magnet'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4AF37),
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryColor,
+                  foregroundColor: isDarkMode ? Colors.black : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -317,9 +384,18 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
     );
   }
 
-  Widget _buildFilesCard(L1337xTorrentDetail torrent) {
+  Widget _buildFilesCard(
+    L1337xTorrentDetail torrent,
+    Color cardBgColor,
+    Color primaryColor,
+    Color? textColor,
+    bool isDarkMode,
+  ) {
+    final listBgColor = isDarkMode ? Colors.grey[900] : Colors.grey[50];
+
     return Card(
       elevation: 2,
+      color: cardBgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         children: [
@@ -334,13 +410,14 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  const Icon(Icons.folder, color: Color(0xFFD4AF37)),
+                  Icon(Icons.folder, color: primaryColor),
                   const SizedBox(width: 8),
                   Text(
                     'Files (${torrent.files.length})',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
+                      color: textColor,
                     ),
                   ),
                   const Spacer(),
@@ -348,7 +425,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                     _showFiles
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: Colors.grey[700],
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
                   ),
                 ],
               ),
@@ -359,7 +436,7 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
           if (_showFiles)
             Container(
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: listBgColor,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(12),
                   bottomRight: Radius.circular(12),
@@ -375,12 +452,15 @@ class _L1337xDetailScreenState extends State<L1337xDetailScreen> {
                     dense: true,
                     title: Text(
                       file.name,
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: 14, color: textColor),
                       overflow: TextOverflow.ellipsis,
                     ),
                     trailing: Text(
                       file.size,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                      ),
                     ),
                   );
                 },

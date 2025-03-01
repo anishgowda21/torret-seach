@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/model/l1337x_search_result.dart';
+import 'package:my_app/providers/theme_provider.dart';
 import 'package:my_app/screens/l1337x_detail_screen.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/widgets/loading_dialog.dart';
+import 'package:provider/provider.dart';
 
 class L1337xTorrentCard extends StatefulWidget {
   final L1337xTorrentItem torrent;
@@ -21,11 +23,33 @@ class L1337xTorrentCard extends StatefulWidget {
 class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
+    // Get theme colors
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final secondaryTextColor = Theme.of(
+      context,
+      // ignore: deprecated_member_use
+    ).textTheme.bodyMedium?.color?.withOpacity(0.7);
+    final cardColor =
+        isDarkMode
+            ? Color.fromARGB(
+              255,
+              40,
+              35,
+              30,
+            ) // Darker creamy color for dark mode
+            : Color.fromARGB(255, 243, 229, 215); // Original creamy color
+    final primaryColor = Theme.of(context).primaryColor;
+    final buttonBackgroundColor =
+        isDarkMode ? Color.fromARGB(255, 50, 50, 50) : Colors.grey[50];
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       clipBehavior: Clip.antiAlias,
       elevation: 3,
-      color: const Color.fromARGB(255, 243, 229, 215),
+      color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,9 +63,10 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
                 // Torrent name
                 Text(
                   widget.torrent.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: textColor,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -61,12 +86,12 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
                               Icon(
                                 Icons.sd_storage,
                                 size: 16,
-                                color: Colors.grey[600],
+                                color: secondaryTextColor,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 widget.torrent.size,
-                                style: TextStyle(color: Colors.grey[700]),
+                                style: TextStyle(color: secondaryTextColor),
                               ),
                             ],
                           ),
@@ -76,12 +101,12 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
                               Icon(
                                 Icons.calendar_today,
                                 size: 16,
-                                color: Colors.grey[600],
+                                color: secondaryTextColor,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 widget.torrent.date,
-                                style: TextStyle(color: Colors.grey[700]),
+                                style: TextStyle(color: secondaryTextColor),
                               ),
                             ],
                           ),
@@ -138,13 +163,13 @@ class _L1337xTorrentCardState extends State<L1337xTorrentCard> {
           // View Details button
           Container(
             width: double.infinity,
-            color: Colors.grey[50],
+            color: buttonBackgroundColor,
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: ElevatedButton(
               onPressed: _viewDetails,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4AF37),
-                foregroundColor: Colors.white,
+                backgroundColor: primaryColor,
+                foregroundColor: isDarkMode ? Colors.black : Colors.white,
                 padding: EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
