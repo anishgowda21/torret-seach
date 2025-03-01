@@ -12,17 +12,18 @@ import 'package:my_app/model/l1337x_torrent_detail.dart';
 import 'package:my_app/screens/base_results_screen.dart';
 import 'package:my_app/screens/l1337x_results_screen.dart';
 import 'package:my_app/services/search_service.dart';
+import 'package:my_app/utils/cache_manager.dart';
 
 class L1337xSearchService
     implements SearchService<L1337xSearchResult, L1337xTorrentItem> {
   final String baseUrl = dotenv.env['API_URL'] ?? '';
   final Duration timeout = Duration(seconds: 10);
+  final CacheManager _cacheManager = CacheManager();
 
   String? _category;
   String? _sort;
   String? _order = 'desc';
-  int? _season;
-  int? _episode;
+  int _currentPage = 1;
 
   String? get category => _category;
   set category(String? value) => _category = value;
@@ -33,18 +34,14 @@ class L1337xSearchService
   String? get order => _order;
   set order(String? value) => _order = value;
 
-  int? get season => _season;
-  set season(int? value) => _season = value;
-
-  int? get episode => _episode;
-  set episode(int? value) => _episode = value;
+  int get currentPage => _currentPage;
+  set currentPage(int value) => _currentPage = value;
 
   void resetSearchParameters() {
     _category = null;
     _sort = null;
     _order = 'desc';
-    _season = null;
-    _episode = null;
+    _currentPage = 1;
   }
 
   @override
@@ -57,8 +54,24 @@ class L1337xSearchService
   IconData get serviceIcon => Icons.download_outlined;
 
   @override
-  Future<L1337xSearchResult> search(String query) async {
+  Future<L1337xSearchResult> search(String query, {int? page}) async {
     try {
+      final currentPage = page ?? _currentPage;
+
+      final cachedResult = _cacheManager.getCachedSearchResults(
+        query,
+        _category,
+        _sort,
+        _order,
+        currentPage,
+      );
+
+      if (cachedResult != null) {
+        print("Using cached results for: $query (page $currentPage)");
+        return cachedResult as L1337xSearchResult;
+      }
+
+      // No cache hit, perform network request
       final encodedQuery = Uri.encodeComponent(query);
       String url = '$baseUrl/1337x/search?query=$encodedQuery';
 
@@ -72,6 +85,10 @@ class L1337xSearchService
 
       if (_order != null && _order!.isNotEmpty) {
         url += '&order=$_order';
+      }
+
+      if (currentPage > 1) {
+        url += '&page=$currentPage';
       }
 
       if (baseUrl.isEmpty) throw Exception("API URL not configured");
@@ -90,6 +107,16 @@ class L1337xSearchService
       if (response.statusCode == 200) {
         try {
           final searchResponse = L1337xSearchResult.fromJson(responseData);
+          _cacheManager.cacheSearchResults(
+            query,
+            _category,
+            _sort,
+            _order,
+            currentPage,
+            searchResponse,
+          );
+
+          _currentPage = currentPage;
           return searchResponse;
         } catch (e) {
           throw Exception('Error processing response data: $e');
@@ -112,6 +139,13 @@ class L1337xSearchService
 
   Future<L1337xTorrentDetail> getDetails(String link) async {
     try {
+      final cachedDetail = _cacheManager.getCachedDetails(link);
+
+      if (cachedDetail != null) {
+        print("Using cached details for: $link");
+        return cachedDetail as L1337xTorrentDetail;
+      }
+
       final encodedLink = Uri.encodeComponent(link);
       final url = '$baseUrl/1337x/details?link=$encodedLink';
 
@@ -132,6 +166,8 @@ class L1337xSearchService
       if (response.statusCode == 200) {
         try {
           final detailResponse = L1337xTorrentDetail.fromJson(responseData);
+          _cacheManager.cacheDetails(link, detailResponse);
+
           return detailResponse;
         } catch (e) {
           throw Exception('Error processing details response data: $e');

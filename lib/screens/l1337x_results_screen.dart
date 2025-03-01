@@ -3,6 +3,7 @@ import 'package:my_app/model/l1337x_search_result.dart';
 import 'package:my_app/screens/base_results_screen.dart';
 import 'package:my_app/services/l1337x_search_service.dart';
 import 'package:my_app/widgets/l1337x_torrent_card.dart';
+import 'package:my_app/widgets/pagination_control.dart';
 
 class L1337xResultsScreen extends BaseResultsScreen<L1337xTorrentItem> {
   final L1337xSearchResult initialResults;
@@ -27,9 +28,7 @@ class L1337xResultsScreenState
   late L1337xSearchService _service;
   int _currentPage = 1;
   int _totalPages = 1;
-  String? _category;
-  String? _sort;
-  String? _order;
+  bool _loadingPage = false;
 
   @override
   void initState() {
@@ -37,12 +36,12 @@ class L1337xResultsScreenState
     final l1337xScreen = widget as L1337xResultsScreen;
     _service = l1337xScreen.service;
 
-    // Store pagination and filter data from initial results
+    // Store pagination data from initial results
     _currentPage = l1337xScreen.initialResults.pagination.currentPage;
     _totalPages = l1337xScreen.initialResults.pagination.lastPage;
-    _category = l1337xScreen.initialResults.filters.category;
-    _sort = l1337xScreen.initialResults.filters.sort;
-    _order = l1337xScreen.initialResults.filters.order;
+
+    // Make sure service has the correct current page
+    _service.currentPage = _currentPage;
   }
 
   @override
@@ -50,44 +49,7 @@ class L1337xResultsScreenState
 
   @override
   Future<void> performSearch(String query) async {
-    if (query.trim().isEmpty) return;
-
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-
-    try {
-      // Apply any saved filters
-      if (_category != null && _category != 'All') {
-        _service.category = _category;
-      }
-      if (_sort != null) {
-        _service.sort = _sort;
-      }
-      if (_order != null) {
-        _service.order = _order;
-      }
-
-      final newResults = await _service.search(query);
-
-      if (mounted) {
-        setState(() {
-          items = newResults.results;
-          _currentPage = newResults.pagination.currentPage;
-          _totalPages = newResults.pagination.lastPage;
-          totalResults = newResults.results.length;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          errorMessage = formatError(e);
-          isLoading = false;
-        });
-      }
-    }
+    _loadPage(1, query);
   }
 
   @override
@@ -97,95 +59,46 @@ class L1337xResultsScreenState
 
   @override
   Widget build(BuildContext context) {
-    final resultListWidget = super.build(context);
+    // Get the base widget without modifications
+    final Widget baseWidget = super.build(context);
 
-    // If we have multiple pages, add pagination controls
-    if (_totalPages > 1) {
+    // Extract the scaffold from the base widget
+    if (baseWidget is Scaffold) {
+      // Create a new scaffold with our modifications
       return Scaffold(
+        appBar: baseWidget.appBar,
         body: Column(
           children: [
-            Expanded(child: resultListWidget),
-            _buildPaginationControls(),
+            Expanded(child: baseWidget.body ?? Container()),
+            // Add pagination controls at the bottom
+            if (_totalPages > 1)
+              PaginationControl(
+                currentPage: _currentPage,
+                totalPages: _totalPages,
+                onPageChanged: (page) => _loadPage(page, searchController.text),
+                isLoading: _loadingPage,
+              ),
           ],
         ),
       );
     }
 
-    return resultListWidget;
+    // Fallback to the original widget if it's not a scaffold
+    return baseWidget;
   }
 
-  Widget _buildPaginationControls() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Page info
-          Text(
-            'Page $_currentPage of $_totalPages',
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ),
+  Future<void> _loadPage(int page, String query) async {
+    if (_loadingPage) return;
 
-          // Navigation buttons
-          Row(
-            children: [
-              // Previous page button
-              IconButton(
-                onPressed: _currentPage > 1 ? _goToPreviousPage : null,
-                icon: Icon(Icons.arrow_back_ios, size: 18),
-                color: _currentPage > 1 ? const Color(0xFFD4AF37) : Colors.grey,
-              ),
-
-              // Next page button
-              IconButton(
-                onPressed: _currentPage < _totalPages ? _goToNextPage : null,
-                icon: Icon(Icons.arrow_forward_ios, size: 18),
-                color:
-                    _currentPage < _totalPages
-                        ? const Color(0xFFD4AF37)
-                        : Colors.grey,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _goToPreviousPage() {
-    if (_currentPage > 1) {
-      _loadPage(_currentPage - 1);
-    }
-  }
-
-  void _goToNextPage() {
-    if (_currentPage < _totalPages) {
-      _loadPage(_currentPage + 1);
-    }
-  }
-
-  Future<void> _loadPage(int page) async {
     setState(() {
+      _loadingPage = true;
       isLoading = true;
       errorMessage = null;
     });
 
     try {
-      // Apply any saved filters
-      if (_category != null && _category != 'All') {
-        _service.category = _category;
-      }
-      if (_sort != null) {
-        _service.sort = _sort;
-      }
-      if (_order != null) {
-        _service.order = _order;
-      }
-
-      // Add page parameter to the URL
-      final query = searchController.text;
-      final newResults = await _service.search(query);
+      // Perform search with specified page
+      final newResults = await _service.search(query, page: page);
 
       if (mounted) {
         setState(() {
@@ -194,6 +107,7 @@ class L1337xResultsScreenState
           _totalPages = newResults.pagination.lastPage;
           totalResults = newResults.pagination.perPageResults;
           isLoading = false;
+          _loadingPage = false;
         });
       }
     } catch (e) {
@@ -201,6 +115,7 @@ class L1337xResultsScreenState
         setState(() {
           errorMessage = formatError(e);
           isLoading = false;
+          _loadingPage = false;
         });
       }
     }
