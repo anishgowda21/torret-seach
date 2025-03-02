@@ -7,12 +7,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:my_app/model/l1337x_search_result.dart';
-import 'package:my_app/model/l1337x_torrent_detail.dart';
-import 'package:my_app/screens/base_results_screen.dart';
-import 'package:my_app/screens/l1337x_results_screen.dart';
-import 'package:my_app/services/search_service.dart';
-import 'package:my_app/utils/cache_manager.dart';
+import 'package:torret_seach/model/l1337x_search_result.dart';
+import 'package:torret_seach/model/l1337x_torrent_detail.dart';
+import 'package:torret_seach/screens/base_results_screen.dart';
+import 'package:torret_seach/screens/l1337x_results_screen.dart';
+import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/utils/cache_manager.dart';
 
 class L1337xSearchService
     implements SearchService<L1337xSearchResult, L1337xTorrentItem> {

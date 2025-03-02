@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/utils/cache_manager.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/utils/cache_manager.dart';
 import 'package:provider/provider.dart';
 
 class CacheManagerScreen extends StatefulWidget {

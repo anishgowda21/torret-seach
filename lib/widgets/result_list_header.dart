@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/providers/theme_provider.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class ResultListHeader extends StatelessWidget {

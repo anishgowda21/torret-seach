@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/base_results_screen.dart';
+import 'package:torret_seach/screens/base_results_screen.dart';
 
 abstract class SearchService<T, R> {
   String get serviceName;

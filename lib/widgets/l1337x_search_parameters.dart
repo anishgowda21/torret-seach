@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/services/l1337x_search_service.dart';
-import 'package:my_app/widgets/service_search_parameters.dart';
+import 'package:torret_seach/services/l1337x_search_service.dart';
+import 'package:torret_seach/widgets/service_search_parameters.dart';
 
 class L1337xSearchParameters extends ServiceSearchParameters {
   const L1337xSearchParameters({

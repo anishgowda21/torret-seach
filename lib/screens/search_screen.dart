@@ -1,12 +1,12 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:my_app/services/l1337x_search_service.dart';
-import 'package:my_app/services/search_service_provider.dart';
-import 'package:my_app/widgets/service_search_parameters.dart';
-import 'package:my_app/widgets/service_selection_dropdown.dart';
-import 'package:my_app/screens/settings_screen.dart';
-import 'package:my_app/providers/theme_provider.dart';
+import 'package:torret_seach/services/l1337x_search_service.dart';
+import 'package:torret_seach/services/search_service_provider.dart';
+import 'package:torret_seach/widgets/service_search_parameters.dart';
+import 'package:torret_seach/widgets/service_selection_dropdown.dart';
+import 'package:torret_seach/screens/settings_screen.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/model/l1337x_search_result.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/screens/l1337x_detail_screen.dart';
-import 'package:my_app/services/l1337x_search_service.dart';
-import 'package:my_app/widgets/loading_dialog.dart';
+import 'package:torret_seach/model/l1337x_search_result.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/screens/l1337x_detail_screen.dart';
+import 'package:torret_seach/services/l1337x_search_service.dart';
+import 'package:torret_seach/widgets/loading_dialog.dart';
 import 'package:provider/provider.dart';
 
 class L1337xTorrentCard extends StatefulWidget {

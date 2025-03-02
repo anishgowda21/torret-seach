@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:my_app/model/yts_search_result.dart';
-import 'package:my_app/screens/base_results_screen.dart';
-import 'package:my_app/screens/yts_results_screen.dart';
-import 'package:my_app/services/search_service.dart';
-import 'package:my_app/utils/cache_manager.dart';
+import 'package:torret_seach/model/yts_search_result.dart';
+import 'package:torret_seach/screens/base_results_screen.dart';
+import 'package:torret_seach/screens/yts_results_screen.dart';
+import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/utils/cache_manager.dart';
 
 class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
   final String baseUrl = dotenv.env['API_URL'] ?? '';

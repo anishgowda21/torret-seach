@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/widgets/results_list.dart';
-import 'package:my_app/widgets/res_search_bar.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/widgets/results_list.dart';
+import 'package:torret_seach/widgets/res_search_bar.dart';
 import 'package:provider/provider.dart';
 
 abstract class BaseResultsScreen<T> extends StatefulWidget {

@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:my_app/model/l1337x_torrent_detail.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/services/l1337x_search_service.dart';
+import 'package:torret_seach/model/l1337x_torrent_detail.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/services/l1337x_search_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 

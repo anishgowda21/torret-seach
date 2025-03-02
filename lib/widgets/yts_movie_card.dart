@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:language_picker/languages.dart';
-import 'package:my_app/model/yts_search_result.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/widgets/yts_torrent_section.dart';
+import 'package:torret_seach/model/yts_search_result.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/widgets/yts_torrent_section.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 

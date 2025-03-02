@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/providers/theme_provider.dart';
-import 'package:my_app/widgets/result_list_header.dart';
+import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/widgets/result_list_header.dart';
 import 'package:provider/provider.dart';
 
 enum ResultsListState { loading, error, empty, data }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/services/search_service.dart';
-import 'package:my_app/services/search_service_provider.dart';
+import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/services/search_service_provider.dart';
 
 class ServiceSelectionDropdown extends StatelessWidget {
   final SearchServiceProvider serviceProvider;

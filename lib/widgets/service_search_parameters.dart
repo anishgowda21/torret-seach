@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/services/l1337x_search_service.dart';
-import 'package:my_app/services/search_service.dart';
-import 'package:my_app/widgets/l1337x_search_parameters.dart';
+import 'package:torret_seach/services/l1337x_search_service.dart';
+import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/widgets/l1337x_search_parameters.dart';
 
 abstract class ServiceSearchParameters extends StatefulWidget {
   final SearchService service;
