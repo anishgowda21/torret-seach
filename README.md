@@ -1,7 +1,7 @@
 # Torret Seach
 
 <p align="center">
-  <img src="assets/icons/app_icon.pngapp_icon.png" alt="Torret Seach Logo" width="120"/>
+  <img src="assets/icons/app_icon.png" alt="Torret Seach Logo" width="120"/>
 </p>
 
 Torret Seach is a beautiful, open-source torrent search application that provides a clean, ad-free interface to search for torrents from popular providers like 1337x and YTS.
@@ -18,10 +18,10 @@ Torret Seach is a beautiful, open-source torrent search application that provide
 ## Screenshots
 
 <p align="center">
-  <img src="assets/screen_shots/screenshot1.png" width="200" />
-  <img src="assets/screen_shots/screenshot2.png" width="200" /> 
-  <img src="assets/screen_shots/screenshot3.png" width="200" />
-  <img src="assets/screen_shots/screenshot4.png" width="200" />
+  <img src="assets/screen_shots/screenshot1.jpg" width="200" />
+  <img src="assets/screen_shots/screenshot2.jpg" width="200" /> 
+  <img src="assets/screen_shots/screenshot3.jpg" width="200" />
+  <img src="assets/screen_shots/screenshot4.jpg" width="200" />
 </p>
 
 ## Getting Started
