@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:torret_seach/screens/search_screen.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:torret_seach/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
 
   // Initialize theme provider
   final themeProvider = ThemeProvider();

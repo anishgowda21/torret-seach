@@ -39,19 +39,36 @@ class ResultListHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Results: $itemsLength${totalResults != 0 && totalResults != itemsLength ? ' of $totalResults' : ''}',
+            'Results per Page: $itemsLength${totalResults != 0 && totalResults != itemsLength ? ' of $totalResults' : ''}',
             style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
           ),
-          if (query.isNotEmpty)
-            Flexible(
-              child: Text(
-                'Query: "$query"',
-                style: TextStyle(fontStyle: FontStyle.italic, color: textColor),
-                overflow: TextOverflow.ellipsis,
+          if (query.trim().isNotEmpty)
+            Tooltip(
+              message: 'Query: "${query.trim()}"',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.search, size: 16, color: textColor),
+                  SizedBox(width: 4),
+                  Text(
+                    _truncateText(query.trim(), 20),
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: textColor,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
       ),
     );
+  }
+
+  String _truncateText(String text, int maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return '${text.substring(0, maxLength)}...';
   }
 }
