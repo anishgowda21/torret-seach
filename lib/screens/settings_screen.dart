@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:my_app/providers/theme_provider.dart';
+import 'package:my_app/screens/cache_manager_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       backgroundColor:
@@ -74,15 +77,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Georgia',
-                        color: isDarkMode ? Colors.white : Colors.black,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      width: 40,
-                      height: 2,
-                      color: const Color(0xFFD4AF37),
-                    ),
+                    Container(width: 40, height: 2, color: primaryColor),
                   ],
                 ),
               ),
@@ -106,7 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           onChanged: (value) {
                             themeProvider.toggleTheme();
                           },
-                          activeColor: const Color(0xFFD4AF37),
+                          activeColor: primaryColor,
                         ),
                       );
                     },
@@ -115,24 +114,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               _buildSettingsSection(
-                title: 'Cache',
+                title: 'Storage',
                 icon: Icons.storage_outlined,
                 children: [
                   _buildSettingsTile(
-                    title: 'Clear Search Cache',
-                    subtitle: 'Clear saved search results',
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: const Color(0xFFD4AF37),
-                      ),
-                      onPressed: () {
-                        // This would be implemented to clear the cache
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Cache cleared successfully')),
-                        );
-                      },
-                    ),
+                    title: 'Cache Manager',
+                    subtitle: 'View and manage cached data',
+                    trailing: Icon(Icons.chevron_right, color: primaryColor),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CacheManagerScreen(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -150,9 +146,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: 'Licenses',
                     subtitle: 'Open source licenses',
                     trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey,
+                      Icons.chevron_right,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey,
                     ),
                     onTap: () {
                       showLicensePage(

@@ -123,14 +123,17 @@ class CacheManager {
     int totalEntries = _cache.length;
     int l1337xSearchEntries =
         _cache.keys.where((k) => k.startsWith('l1337xsearch:')).length;
-    int detailsEntries =
+    int l1337xdetailsEntries =
         _cache.keys.where((k) => k.startsWith('l1337xdetails:')).length;
+    int ytsQueryEntries =
+        _cache.keys.where((k) => k.startsWith('ytsquery:')).length;
     int expiredEntries = _cache.values.where((entry) => entry.isExpired).length;
 
     return {
       'totalEntries': totalEntries,
       'l1337xSearchEntries': l1337xSearchEntries,
-      'l1337xDetailsEntries': detailsEntries,
+      'l1337xDetailsEntries': l1337xdetailsEntries,
+      'ytsQueryEnries': ytsQueryEntries,
       'expiredEntries': expiredEntries,
       'activeCacheSize': totalEntries - expiredEntries,
     };
