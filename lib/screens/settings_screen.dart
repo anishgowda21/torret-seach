@@ -1,5 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:torret_seach/providers/theme_provider.dart';
@@ -120,6 +122,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               buildSettingsSection(
                 context: context,
+                title: 'API Configuration',
+                icon: Icons.api_outlined,
+                children: [
+                  buildSettingsTile(
+                    context: context,
+                    title: 'Manage API URL',
+                    subtitle: 'Set or update the API endpoint',
+                    trailing: Icon(Icons.chevron_right, color: primaryColor),
+                    onTap: () => showApiUrlDialog(context),
+                  ),
+                ],
+              ),
+
+              buildSettingsSection(
+                context: context,
                 title: 'Storage',
                 icon: Icons.storage_outlined,
                 children: [
@@ -136,21 +153,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       );
                     },
-                  ),
-                ],
-              ),
-
-              buildSettingsSection(
-                context: context,
-                title: 'API Configuration',
-                icon: Icons.api_outlined,
-                children: [
-                  buildSettingsTile(
-                    context: context,
-                    title: 'Manage API URL',
-                    subtitle: 'Set or update the API endpoint',
-                    trailing: Icon(Icons.chevron_right, color: primaryColor),
-                    onTap: () => showApiUrlDialog(context),
                   ),
                 ],
               ),
@@ -319,16 +321,25 @@ Future<(bool isValid, String? errorMessage)> validateApiUrl(String url) async {
 
   // Health check
   try {
+    final healthUrl = url.endsWith('/') ? '${url}health' : '$url/health';
+
     final response = await http
-        .get(Uri.parse(url))
+        .get(Uri.parse(healthUrl))
         .timeout(Duration(seconds: 5));
-    if (response.statusCode == 200 && response.body == 'Hello World!') {
-      return (true, null);
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> healthData = jsonDecode(response.body);
+      if (healthData['apiSignature'] == 'anishgowda21_torrent_api' &&
+          healthData['ownerIdentifier'] == 'AG21') {
+        return (true, null);
+      } else {
+        return (false, 'Not an official API');
+      }
     } else {
-      return (false, 'Invalid API endpoint');
+      return (false, 'Invalid Response');
     }
   } catch (e) {
-    return (false, 'Failed to connect. Check the URL and try again.');
+    return (false, 'Failed to connect. Not an official API');
   }
 }
 
@@ -430,7 +441,7 @@ void showApiUrlDialog(BuildContext context) {
                   GestureDetector(
                     onTap: launchInstructionsUrl,
                     child: Text(
-                      'Need help? View setup instructions',
+                      'Need help? View setup instructions for API URL',
                       style: TextStyle(
                         color: Theme.of(builderContext).primaryColor,
                       ),

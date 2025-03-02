@@ -41,8 +41,8 @@ class SearchServiceProvider extends ChangeNotifier {
   }
 
   void _initializeServices() {
-    _services.add(YtsSearchService());
     _services.add(L1337xSearchService());
+    _services.add(YtsSearchService());
 
     if (_services.isNotEmpty) {
       _currentService = _services.first;

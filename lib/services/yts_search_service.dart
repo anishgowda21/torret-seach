@@ -42,7 +42,7 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
       }
 
       final encodedQuery = Uri.encodeComponent(query);
-      final url = '$baseUrl/yts?query=$encodedQuery&img=true';
+      final url = '$baseUrl/yts/search?query=$encodedQuery&img=true';
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
       Map<String, dynamic> responseData;
