@@ -52,11 +52,7 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
         throw Exception('Failed to parse response: Invalid JSON format');
       }
 
-      if (!responseData.containsKey('status')) {
-        throw Exception('Invalid API response: Missing status field');
-      }
-
-      if (response.statusCode == 200 && responseData['status'] == 'ok') {
+      if (response.statusCode == 200) {
         try {
           final searchResponse = YtsSearchResult.fromJson(responseData);
 
