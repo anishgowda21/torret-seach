@@ -3,15 +3,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:torret_seach/model/yts_search_result.dart';
 import 'package:torret_seach/screens/base_results_screen.dart';
 import 'package:torret_seach/screens/yts_results_screen.dart';
 import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/utils/api_url_manager.dart';
 import 'package:torret_seach/utils/cache_manager.dart';
 
 class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
-  final String baseUrl = dotenv.env['API_URL'] ?? '';
+  Future<String?> get apiUrl async => await ApiUrlManager.getApiUrl();
   final Duration timeout = Duration(seconds: 10);
   final CacheManager _cacheManager = CacheManager();
 
@@ -25,8 +25,16 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
   IconData get serviceIcon => Icons.movie_outlined;
 
   @override
+  void resetSearchParameters() {}
+
+  @override
   Future<YtsSearchResult> search(String query) async {
     try {
+      final baseUrl = await apiUrl;
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("API URL not configured. Please set it in Settings.");
+      }
+
       final cachedResult = _cacheManager.getYtsQueryResults(query);
 
       if (cachedResult != null) {
@@ -35,9 +43,6 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
 
       final encodedQuery = Uri.encodeComponent(query);
       final url = '$baseUrl/yts?query=$encodedQuery&img=true';
-
-      if (baseUrl.isEmpty) throw Exception("API URL not configured");
-
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
       Map<String, dynamic> responseData;
@@ -106,8 +111,10 @@ class YtsSearchService implements SearchService<YtsSearchResult, Movie> {
 
   @override
   Future<bool> isAvailable() async {
-    if (baseUrl.isEmpty) return false;
-
+    final baseUrl = await apiUrl;
+    if (baseUrl == null || baseUrl.isEmpty) {
+      return false;
+    }
     try {
       final response = await http
           .get(Uri.parse('$baseUrl/yts'))

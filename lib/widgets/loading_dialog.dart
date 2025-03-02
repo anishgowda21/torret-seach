@@ -69,18 +69,16 @@ class LoadingDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors:
-                      isDarkMode
-                          ? [
-                            const Color(0xFF7A6621), // Darkest gold
-                            const Color(0xFF8A7423), // Dark gold
-                            const Color(0xFFA48929), // Medium gold
-                          ]
-                          : [
-                            const Color(0xFFF8E8B0), // Light gold
-                            const Color(0xFFE7D394), // Medium light gold
-                            const Color(0xFFD4AF37), // Standard gold
-                          ],
+                  colors: [
+                    const Color.fromARGB(255, 241, 230, 188), // Light gold
+                    const Color.fromARGB(
+                      255,
+                      230,
+                      206,
+                      134,
+                    ), // Medium light gold
+                    const Color.fromARGB(255, 243, 186, 14), // Standard gold
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -97,7 +95,7 @@ class LoadingDialog extends StatelessWidget {
                 padding: EdgeInsets.all(15),
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(goldColor),
+                  color: const Color.fromARGB(255, 249, 249, 248),
                 ),
               ),
             ),

@@ -5,18 +5,18 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:torret_seach/model/l1337x_search_result.dart';
 import 'package:torret_seach/model/l1337x_torrent_detail.dart';
 import 'package:torret_seach/screens/base_results_screen.dart';
 import 'package:torret_seach/screens/l1337x_results_screen.dart';
 import 'package:torret_seach/services/search_service.dart';
+import 'package:torret_seach/utils/api_url_manager.dart';
 import 'package:torret_seach/utils/cache_manager.dart';
 
 class L1337xSearchService
     implements SearchService<L1337xSearchResult, L1337xTorrentItem> {
-  final String baseUrl = dotenv.env['API_URL'] ?? '';
+  Future<String?> get apiUrl async => await ApiUrlManager.getApiUrl();
   final Duration timeout = Duration(seconds: 10);
   final CacheManager _cacheManager = CacheManager();
 
@@ -37,6 +37,7 @@ class L1337xSearchService
   int get currentPage => _currentPage;
   set currentPage(int value) => _currentPage = value;
 
+  @override
   void resetSearchParameters() {
     _category = null;
     _sort = null;
@@ -57,6 +58,11 @@ class L1337xSearchService
   Future<L1337xSearchResult> search(String query, {int? page}) async {
     try {
       final currentPage = page ?? _currentPage;
+
+      final baseUrl = await apiUrl;
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("API URL not configured. Please set it in Settings.");
+      }
 
       final cachedResult = _cacheManager.get1337xCachedSearchResults(
         query,
@@ -89,8 +95,6 @@ class L1337xSearchService
       if (currentPage > 1) {
         url += '&page=$currentPage';
       }
-
-      if (baseUrl.isEmpty) throw Exception("API URL not configured");
 
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
@@ -131,12 +135,17 @@ class L1337xSearchService
     } on FormatException {
       throw Exception('Invalid response format');
     } catch (e) {
-      throw Exception('Unexpected error: $e');
+      throw Exception(e);
     }
   }
 
   Future<L1337xTorrentDetail> getDetails(String link) async {
     try {
+      final baseUrl = await apiUrl;
+      if (baseUrl == null || baseUrl.isEmpty) {
+        throw Exception("API URL not configured. Please set it in Settings.");
+      }
+
       final cachedDetail = _cacheManager.get1337xCachedDetails(link);
 
       if (cachedDetail != null) {
@@ -145,8 +154,6 @@ class L1337xSearchService
 
       final encodedLink = Uri.encodeComponent(link);
       final url = '$baseUrl/1337x/details?link=$encodedLink';
-
-      if (baseUrl.isEmpty) throw Exception("API URL not configured");
 
       final response = await http.get(Uri.parse(url)).timeout(timeout);
 
@@ -209,7 +216,8 @@ class L1337xSearchService
 
   @override
   Future<bool> isAvailable() async {
-    if (baseUrl.isEmpty) return false;
+    final baseUrl = await apiUrl;
+    if (baseUrl == null || baseUrl.isEmpty) return false;
 
     try {
       final response = await http

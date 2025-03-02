@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:torret_seach/services/l1337x_search_service.dart';
 import 'package:torret_seach/services/search_service_provider.dart';
+import 'package:torret_seach/utils/error_formatter.dart';
 import 'package:torret_seach/widgets/service_search_parameters.dart';
 import 'package:torret_seach/widgets/service_selection_dropdown.dart';
 import 'package:torret_seach/screens/settings_screen.dart';
@@ -424,56 +424,29 @@ class _SearchScreenState extends State<SearchScreen> {
 
     setState(() {
       _errorMessage = null;
+      _isLoading = true;
     });
 
     _searchFocusNode.unfocus();
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       final service = _serviceProvider.currentService;
+      final results = await service.search(query);
 
-      // For 1337x, use the formatted query that includes season/episode
-      if (service is L1337xSearchService) {
-        final results = await service.search(query);
-
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => service.createResultsScreen(
-                    results: results,
-                    query: query,
-                  ),
-            ),
-          ).then((_) {
-            if (mounted) {
-              _searchController.clear();
-              service.resetSearchParameters();
-            }
-          });
-        }
-      } else {
-        // Other services
-        final results = await service.search(query);
-
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => service.createResultsScreen(
-                    results: results,
-                    query: query,
-                  ),
-            ),
-          ).then((_) {
-            if (mounted) _searchController.clear();
-          });
-        }
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    service.createResultsScreen(results: results, query: query),
+          ),
+        ).then((_) {
+          if (mounted) {
+            _searchController.clear();
+            service.resetSearchParameters();
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -489,13 +462,7 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   String _formatError(dynamic e) {
-    final message = e.toString();
-    if (message.contains('internet')) {
-      return 'Please check your internet connection';
-    } else if (message.contains('timed out')) {
-      return 'The request took too long. Try again';
-    }
-    return 'Error: ${message.replaceAll('Exception: ', '')}';
+    return ErrorFormatter.formatError(e);
   }
 
   @override

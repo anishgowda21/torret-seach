@@ -20,4 +20,6 @@ abstract class SearchService<T, R> {
   List<R> getItemsFromResults(T results);
 
   String? getErrorFromResults(T results);
+
+  void resetSearchParameters();
 }

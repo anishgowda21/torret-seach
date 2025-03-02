@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:torret_seach/providers/theme_provider.dart';
+import 'package:torret_seach/utils/error_formatter.dart';
 import 'package:torret_seach/widgets/results_list.dart';
 import 'package:torret_seach/widgets/res_search_bar.dart';
 import 'package:provider/provider.dart';
@@ -72,12 +73,7 @@ abstract class BaseResultsScreenState<T> extends State<BaseResultsScreen<T>>
   String get appBarTitle;
 
   String formatError(dynamic e) {
-    if (e.toString().contains('internet')) {
-      return 'Please check your internet connection.';
-    } else if (e.toString().contains('timed out')) {
-      return 'The request took too long. Try again.';
-    }
-    return 'An error occurred: $e';
+    return ErrorFormatter.formatError(e);
   }
 
   @override
